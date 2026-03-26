@@ -27,11 +27,7 @@
 
 ## 工作流
 
-```
-raw-input → requirements → design → tech-spec → implementation → testing → deployment
-```
-
-详见 [convention/workflow.md](convention/workflow.md)
+@convention/workflow.md
 
 ## 路由规范
 
@@ -43,6 +39,8 @@ raw-input → requirements → design → tech-spec → implementation → testi
 
 ## 当前活跃 Workspace
 
+开发过程中按需创建，每个功能在 `workspace/{feature}/` 下独立管理。
+
 | Workspace | 描述 | 状态 |
 |-----------|------|------|
-| {初始化后自动生成} | | |
+| - | - | - |
