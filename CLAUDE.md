@@ -1,0 +1,48 @@
+# CLAUDE.md
+
+该项目是 AI Native 工程，即 AI 直接使用的工程项目。
+
+本文件是 AI 索引入口文件，存放精简且极度重要的信息以及其他关键信息的路由。
+
+## 项目背景
+
+{执行 `/ai-native-init` 后自动生成}
+
+### 核心原理
+
+| 原理 | 含义 |
+|------|------|
+| AI 是目标开发者 | 文档结构为 AI 设计，人类阅读是次要的 |
+| 有效上下文 | 上下文质量决定 AI 输出质量，需控制长度 |
+| 规范驱动开发 | 先定义规范，再由 AI 执行代码 |
+
+## 工程结构
+
+| 目录 | 用途 | AI 行为 |
+|------|------|---------|
+| [background](background/) | 静态背景知识 | 只读，了解领域知识 |
+| [convention](convention/) | 规范定义 | 必须遵循 |
+| [workspace](workspace/) | 活跃工作区 | 频繁读写，跟踪进度 |
+| [target](target/) | 实际代码 | 实现阶段才访问 |
+
+## 工作流
+
+```
+raw-input → requirements → design → tech-spec → implementation → testing → deployment
+```
+
+详见 [convention/workflow.md](convention/workflow.md)
+
+## 路由规范
+
+索引文件只存放路由，不存放内容。按需访问，避免上下文膨胀：
+
+```markdown
+[name](path/to/target)
+```
+
+## 当前活跃 Workspace
+
+| Workspace | 描述 | 状态 |
+|-----------|------|------|
+| {初始化后自动生成} | | |
