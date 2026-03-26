@@ -7,8 +7,6 @@
 | 文件 | 内容 |
 |------|------|
 | [ai-native.md](ai-native.md) | AI Native 概念定义 |
-| [principles.md](principles.md) | 三大核心原理详解 |
-| [comparison.md](comparison.md) | 与传统开发模式对比 |
 
 ## 约束
 
