@@ -40,19 +40,37 @@ AI 会在 `workspace/` 中创建功能目录，按阶段生成文档，最终在
 
 ## 目录结构
 
+### 模板基座（初始化前）
+
+```
+ai-native-template/
+├── CLAUDE.md           # AI 入口文件
+├── background/         # 背景知识（空，等待填充）
+├── convention/         # 规范定义
+│   ├── document.md     # 文档编写规范
+│   └── workflow.md     # 工作流规范
+├── workspace/          # 活跃工作区（空）
+└── target/             # 实际代码（空）
+```
+
+### 初始化后（执行 /ai-native-init）
+
 ```
 your-project/
-├── CLAUDE.md           # AI 入口文件（必需）
-├── background/         # 背景知识（AI 只读）
-│   ├── ai-native.md    # AI Native 概念
-│   ├── principles.md   # 核心原理
-│   └── comparison.md   # 与传统开发对比
-├── convention/         # 规范定义（AI 必须遵循）
+├── CLAUDE.md           # AI 入口文件（已填充项目背景）
+├── background/
+│   ├── product/        # 产品背景
+│   │   └── overview.md
+│   └── tech/           # 技术背景
+│       └── stack.md
+├── convention/
 │   ├── document.md     # 文档编写规范
-│   ├── structure.md    # 目录结构规范
-│   └── workflow.md     # 工作流规范
-├── workspace/          # 活跃工作区（AI 频繁读写）
-└── target/             # 实际代码（实施阶段才访问）
+│   ├── workflow.md     # 工作流规范
+│   ├── structure.md    # 目录结构规范（生成）
+│   └── coding-style.md # 代码风格规范（生成）
+├── workspace/          # 活跃工作区
+│   └── README.md
+└── target/             # 实际代码
 ```
 
 ## 可用命令

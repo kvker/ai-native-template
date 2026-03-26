@@ -7,8 +7,9 @@
 | 文件 | 内容 |
 |------|------|
 | [document.md](document.md) | 文档编写规范 |
-| [structure.md](structure.md) | 目录结构规范 |
 | [workflow.md](workflow.md) | 工作流规范 |
+| coding-style.md | 代码风格规范（初始化时生成） |
+| structure.md | 目录结构规范（初始化时生成） |
 
 ## 约束
 
