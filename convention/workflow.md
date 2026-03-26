@@ -6,6 +6,8 @@
 raw-input → requirements → design → tech-spec → implementation → testing → deployment
 ```
 
+> **注意，若 AI 评估此变更极小，比如非常小的 bug，则咨询开发人员，是否需要按照流程执行。**
+
 ## 阶段详解
 
 ### 1. 需求输入 (raw-input)
