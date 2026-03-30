@@ -25,6 +25,10 @@
 | [workspace](workspace/) | 活跃工作区 | 频繁读写，跟踪进度 |
 | [target](target/) | 实际代码 | 实现阶段才访问 |
 
+## 开发规范
+
+当我需要第三方的库/ API 文档、代码生成、设置或配置步骤时，始终自动使用 Context7，而无需我明确提出请求。
+
 ## 工作流
 
 @convention/workflow.md
