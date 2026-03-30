@@ -2,20 +2,21 @@
   "permissions": {
     "deny": [
       "Read(./node_modules/**)",
-      "Read(./dist/**)",
-      "Read(./build/**)",
-      "Read(./.next/**)",
-      "Read(./target/**)",
-      "Read(./package-lock.json)",
-      "Read(./yarn.lock)",
-      "Read(./pnpm-lock.yaml)",
-      "Read(./.env)",
-      "Read(./.env.*)",
-      "Read(./secrets/**)",
-      "Read(./config/credentials.json)",
-      "Read(./public/assets/images/**)",
-      "Read(./**/*.log)",
-      "Read(./**/*.generated.ts)"
+      "Read(target/node_modules/**)",
+      "Read(target/dist/**)",
+      "Read(target/build/**)",
+      "Read(target/.next/**)",
+      "Read(target/package-lock.json)",
+      "Read(target/yarn.lock)",
+      "Read(target/pnpm-lock.yaml)",
+      "Read(target/.env)",
+      "Read(target/.env.*)",
+      "Read(target/secrets/**)",
+      "Read(target/config/credentials.json)",
+      "Read(target/public/images/**)",
+      "Read(target/public/assets/**)",
+      "Read(target/**/*.log)",
+      "Read(target/**/*.generated.ts)"
     ]
   }
 }
