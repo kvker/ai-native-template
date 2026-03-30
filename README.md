@@ -15,7 +15,7 @@
 cp -r /path/to/ai-native/. /path/to/your-project/
 
 # 2. 将你的旧代码移动到 target 目录
-rm -rf ./target && cp -r /path/to/your-old-code ./target
+mv /path/to/your-old-code ./target
 
 # 3. 执行初始化命令
 /ai-native-init
