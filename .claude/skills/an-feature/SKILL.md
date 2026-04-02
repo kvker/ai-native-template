@@ -37,7 +37,7 @@ raw-input → requirements → design → tech-spec → implementation → testi
 
 ### 通用规则
 
-1. 每个阶段在 `workspace/{feature-name}/` 对应子目录下产出文件
+1. 每个阶段在 `workspace/{YYYYMMDD}__{feature-name}/` 对应子目录下产出文件（日期为创建当天的 `YYYYMMDD` 格式，如 `20260402__user-login`）
 2. 每阶段结束：确认产出物 → 更新工作区 CLAUDE.md 索引 → 询问用户是否进入下一阶段
 3. 用户可随时暂停、回退、修改之前的产出
 4. 不要启动前端服务，默认已经启动
@@ -49,15 +49,15 @@ raw-input → requirements → design → tech-spec → implementation → testi
 **目标**：保存用户的原始描述，不做加工。
 
 **行为**：
-1. 创建工作区目录 `workspace/{feature-name}/`
-2. 将原始输入保存到 `workspace/{feature-name}/raw-input/`
+1. 创建工作区目录 `workspace/{YYYYMMDD}__{feature-name}/`
+2. 将原始输入保存到 `workspace/{YYYYMMDD}__{feature-name}/raw-input/`
 3. 如果是文字描述，保存为 `task.md`；若分解为多个任务，则使用 `task-001.md`、`task-002.md`...（或按用户指定名称）
 4. 如果引用了文件，读取并保存副本
 
 **产出物**：
 
 ```text
-workspace/{feature-name}/raw-input/
+workspace/{YYYYMMDD}__{feature-name}/raw-input/
 └── task.md              # 原始输入内容（多任务时 task-001.md, task-002.md...）
 ```
 
@@ -76,7 +76,7 @@ workspace/{feature-name}/raw-input/
 1. 分析 raw-input，提炼出需求要点
 2. 产出结构化需求文档
 
-**产出物**：`workspace/{feature-name}/requirements/requirements.md`
+**产出物**：`workspace/{YYYYMMDD}__{feature-name}/requirements/requirements.md`
 
 ```markdown
 # {功能名称} 需求文档
@@ -117,7 +117,7 @@ workspace/{feature-name}/raw-input/
 2. 如需了解现有代码，读取 `target/` 下相关文件
 3. 产出设计文档
 
-**产出物**：`workspace/{feature-name}/design/design.md`
+**产出物**：`workspace/{YYYYMMDD}__{feature-name}/design/design.md`
 
 ```markdown
 # {功能名称} 设计文档
@@ -153,7 +153,7 @@ workspace/{feature-name}/raw-input/
 2. 包含数据模型、接口定义、变更清单
 3. 遵循 `convention/coding-style.md` 编码规范
 
-**产出物**：`workspace/{feature-name}/tech-spec/tech-spec.md`
+**产出物**：`workspace/{YYYYMMDD}__{feature-name}/tech-spec/tech-spec.md`
 
 ```markdown
 # {功能名称} 技术规范
@@ -192,7 +192,7 @@ workspace/{feature-name}/raw-input/
 
 **产出物**：
 - `target/` 下的实际代码变更
-- `workspace/{feature-name}/implementation/decisions.md`（如有额外决策）
+- `workspace/{YYYYMMDD}__{feature-name}/implementation/decisions.md`（如有额外决策）
 
 **检查点**：向用户展示代码变更摘要，确认实现完成，然后询问进入下一阶段。
 
@@ -207,7 +207,7 @@ workspace/{feature-name}/raw-input/
 2. 运行 `pnpm test` 验证
 3. 记录测试结果
 
-**产出物**：`workspace/{feature-name}/testing/testing-report.md`
+**产出物**：`workspace/{YYYYMMDD}__{feature-name}/testing/testing-report.md`
 
 ```markdown
 # {功能名称} 测试报告
@@ -236,7 +236,7 @@ workspace/{feature-name}/raw-input/
 2. 更新项目根 `CLAUDE.md` 的活跃 Workspace 表
 3. 产出部署说明（如有必要）
 
-**产出物**：`workspace/{feature-name}/deployment/release-notes.md`
+**产出物**：`workspace/{YYYYMMDD}__{feature-name}/deployment/release-notes.md`
 
 ```markdown
 # {功能名称} 发布说明
