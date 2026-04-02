@@ -11,14 +11,13 @@
 如果你有一个现有的项目想要转换为 AI Native 结构：
 
 ```bash
-# 1. 复制模板到你的项目
-cp -r /path/to/ai-native/. /path/to/your-project/
+# 1. 下载这个模板
 
 # 2. 将你的旧代码移动到 target 目录
 mv /path/to/your-old-code ./target
 
 # 3. 执行初始化命令
-/ai-native-init
+/an-init
 ```
 
 AI 会自动分析 `target/` 中的代码，生成 `background/` 和 `convention/` 文档。
@@ -53,7 +52,7 @@ ai-native-template/
 └── target/             # 实际代码（空）
 ```
 
-### 初始化后（执行 /ai-native-init）
+### 初始化后（执行 /an-init）
 
 ```
 your-project/
@@ -77,7 +76,8 @@ your-project/
 
 | 命令 | 用途 |
 |------|------|
-| `/ai-native-init` | 迁移现有项目，分析 target/ 代码生成文档 |
+| `/an-init` | 迁移现有项目，分析 target/ 代码生成文档 |
+| `/an-feature` | 标准化流程实现 feature |
 
 > 从零开始不需要命令，直接告诉 AI 你的需求即可。
 
