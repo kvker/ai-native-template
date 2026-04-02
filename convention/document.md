@@ -21,7 +21,7 @@
 |------|------|------|
 | 索引 | README.md / CLAUDE.md | README.md |
 | 规范 | 小写-连字符.md | document.md |
-| 任务 | ticket-{id}.md | ticket-001.md |
+| 任务 | task.md（多任务时 task-001.md） | task.md |
 
 ## 语言
 
