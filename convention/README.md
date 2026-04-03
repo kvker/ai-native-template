@@ -8,8 +8,9 @@
 |------|------|
 | [document.md](document.md) | 文档编写规范 |
 | [workflow.md](workflow.md) | 工作流规范 |
-| coding-style.md | 代码风格规范（初始化时生成） |
 | structure.md | 目录结构规范（初始化时生成） |
+
+> 代码风格规范已迁移至 `.claude/rules/code-style.md`，编辑代码时自动生效。
 
 ## 约束
 
