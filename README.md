@@ -32,7 +32,7 @@ AI 会自动分析 `target/` 中的代码，生成 `background/` 和 `convention
 
 **流程**：
 ```
-需求描述 → workspace/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → target/
+/an-feature 需求描述 → workspace/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → target/
 ```
 
 AI 会在 `workspace/` 中创建功能目录，按阶段生成文档，最终在 `target/` 中生成代码。
