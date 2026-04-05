@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(find *)",
+      "Bash(cd *)",
       "Bash(grep *)",
       "Bash(rg *)",
       "Bash(cat *)",
