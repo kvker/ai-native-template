@@ -1,11 +1,11 @@
 ---
-name: an-feature
-description: 根据输入的原始需求，按 AI Native 标准工作流驱动功能开发。当用户想要：1) 开始一个新功能开发 2) 提供了一个需求/票据/想法的原始描述 3) 执行 /an-feature 命令 4) 提到"功能开发"、"新功能"、"需求"、"feature" 等关键词时触发此技能。即使用户没有明确说要走完整流程，只要是"我要做一个XXX功能"之类的意图，都应使用此技能。
+name: an-task
+description: 根据输入的任务描述，按 AI Native 标准工作流驱动任务执行。适用于所有开发任务：新功能开发、bug修复、代码重构、配置修改、文档更新等。当用户想要：1) 开始一个开发任务 2) 提供了任务/票据/想法的原始描述 3) 执行 /an-task 命令 4) 提到"开发"、"实现"、"修复"、"添加"等关键词时触发此技能。即使用户没有明确说要走完整流程，只要是"我要做XXX"之类的意图，都应使用此技能。
 ---
 
-# AI Native 功能开发
+# AI Native 任务开发
 
-将原始需求（票据、想法、问题描述）按标准工作流推进到代码实现。
+将任务描述（票据、想法、问题描述）按标准工作流推进到代码实现。
 
 ## 输入来源
 
@@ -79,10 +79,10 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 **产出物**：`workspace/{YYYYMMDD}__{feature-name}/requirements/requirements.md`
 
 ```markdown
-# {功能名称} 需求文档
+# {任务名称} 需求文档
 
 ## 背景与目标
-{为什么做这个功能，解决什么问题}
+{为什么做这个任务，解决什么问题}
 
 ## 验收标准 (AC)
 - [ ] AC1: {具体可验证的标准}
@@ -120,7 +120,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 **产出物**：`workspace/{YYYYMMDD}__{feature-name}/design/design.md`
 
 ```markdown
-# {功能名称} 设计文档
+# {任务名称} 设计文档
 
 ## 方案概述
 {一句话描述技术方案}
@@ -156,7 +156,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 **产出物**：`workspace/{YYYYMMDD}__{feature-name}/tech-spec/tech-spec.md`
 
 ```markdown
-# {功能名称} 技术规范
+# {任务名称} 技术规范
 
 ## 数据模型
 {接口/类型定义，用 TypeScript 代码块}
@@ -210,7 +210,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 **产出物**：`workspace/{YYYYMMDD}__{feature-name}/testing/testing-report.md`
 
 ```markdown
-# {功能名称} 测试报告
+# {任务名称} 测试报告
 
 ## 测试用例
 | 序号 | 用例 | 结果 | 备注 |
@@ -239,10 +239,10 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 **产出物**：`workspace/{YYYYMMDD}__{feature-name}/deployment/release-notes.md`
 
 ```markdown
-# {功能名称} 发布说明
+# {任务名称} 发布说明
 
 ## 变更摘要
-{本次功能的核心变更}
+{本次任务的核心变更}
 
 ## 版本信息
 - 版本号: ...
@@ -257,7 +257,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 {如有风险，描述回滚步骤}
 ```
 
-**完成**：输出功能开发完成总结。
+**完成**：输出任务完成总结。
 
 ---
 

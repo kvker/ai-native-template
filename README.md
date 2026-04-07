@@ -37,10 +37,10 @@ AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工
 
 **流程**：
 ```
-/an-feature 需求描述 → workspace/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → target/
+/an-task 需求描述 → workspace/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → target/
 ```
 
-AI 会在 `workspace/` 中创建功能目录，按阶段生成文档，最终在 `target/` 中生成代码。
+AI 会在 `workspace/` 中创建任务工作区目录，按阶段生成文档，最终在 `target/` 中生成代码。
 
 ## 目录结构
 
@@ -84,7 +84,7 @@ your-project/
 | 命令 | 用途 |
 |------|------|
 | `/an-init` | 迁移现有项目，分析 target/ 下各工程的代码生成文档 |
-| `/an-feature` | 标准化流程实现 feature |
+| `/an-task` | 标准化流程实现 feature |
 
 > 从零开始不需要命令，直接告诉 AI 你的需求即可。
 
