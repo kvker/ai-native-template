@@ -3,6 +3,8 @@
   "permissions": {
     "defaultMode": "acceptEdits",
     "allow": [
+      "Edit",
+      "Edit(**/*)",
       "Bash(find *)",
       "Bash(cd *)",
       "Bash(grep *)",
