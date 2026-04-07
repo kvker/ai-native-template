@@ -23,7 +23,7 @@
 | [background](background/) | 静态背景知识 | 只读，了解领域知识 |
 | [convention](convention/) | 规范定义 | 必须遵循 |
 | [workspace](workspace/) | 活跃工作区 | 频繁读写，跟踪进度 |
-| [target](target/) | 实际代码 | 实现阶段才访问 |
+| [target](target/) | 实际代码目录 | 实现阶段才访问，每个子目录为一个独立工程 |
 
 ## 开发规范
 

@@ -13,14 +13,19 @@
 ```bash
 # 1. 下载这个模板
 
-# 2. 将你的旧代码移动到 target 目录
-mv /path/to/your-old-code ./target
+# 2. 将你的项目代码复制到 target 目录
+# 单项目：
+cp -r /path/to/your-project ./target/my-project
+
+# 多项目（前后端分离等）：
+cp -r /path/to/frontend ./target/frontend
+cp -r /path/to/backend ./target/backend
 
 # 3. 执行初始化命令
 /an-init
 ```
 
-AI 会自动分析 `target/` 中的代码，生成 `background/` 和 `convention/` 文档。
+AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 和 `convention/` 文档。
 
 ### 方式二：从零开始
 
@@ -69,14 +74,16 @@ your-project/
 │   └── coding-style.md # 代码风格规范（生成）
 ├── workspace/          # 活跃工作区
 │   └── README.md
-└── target/             # 实际代码
+└── target/             # 实际代码（每个子目录为一个工程）
+    ├── frontend/       # 前端工程（示例）
+    └── backend/        # 后端工程（示例）
 ```
 
 ## 可用命令
 
 | 命令 | 用途 |
 |------|------|
-| `/an-init` | 迁移现有项目，分析 target/ 代码生成文档 |
+| `/an-init` | 迁移现有项目，分析 target/ 下各工程的代码生成文档 |
 | `/an-feature` | 标准化流程实现 feature |
 
 > 从零开始不需要命令，直接告诉 AI 你的需求即可。
