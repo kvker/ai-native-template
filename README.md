@@ -14,12 +14,12 @@
 # 1. 下载这个模板
 
 # 2. 将你的项目代码复制到 target 目录
-# 单项目：
-cp -r /path/to/your-project ./target/my-project
+# 单项目（复制到 target/ 下，会保留原始文件夹名）：
+cp -r /path/to/your-project ./target/
 
 # 多项目（前后端分离等）：
-cp -r /path/to/frontend ./target/frontend
-cp -r /path/to/backend ./target/backend
+cp -r /path/to/frontend ./target/
+cp -r /path/to/backend ./target/
 
 # 3. 执行初始化命令
 /an-init
@@ -50,6 +50,7 @@ AI 会在 `workspace/` 中创建任务工作区目录，按阶段生成文档，
 ai-native-template/
 ├── CLAUDE.md           # AI 入口文件
 ├── .claude/rules/      # 规范定义（自动生效）
+│   ├── principles.md   # 核心原则
 │   ├── workflow.md     # 工作流规范
 │   └── document.md     # 文档编写规范
 ├── background/         # 背景知识（空，等待填充）
@@ -86,6 +87,7 @@ your-project/
 | `/an-init` | 迁移现有项目，分析 target/ 下各工程的代码生成文档 |
 | `/an-task` | 标准化流程实现 feature |
 | `/an-task-split` | 将大任务拆分为多个子任务 |
+| `/refresh-background` | 根据实际代码反向更新 background 背景知识库 |
 
 > 从零开始不需要命令，直接告诉 AI 你的需求即可。
 
