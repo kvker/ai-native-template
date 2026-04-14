@@ -1,3 +1,10 @@
+---
+paths:
+  - "workspace/**/*.md"
+  - "background/**/*.md"
+  - "CLAUDE.md"
+---
+
 # 文档编写规范
 
 ## 基本原则
@@ -22,6 +29,10 @@
 | 索引 | README.md / CLAUDE.md | README.md |
 | 规范 | 小写-连字符.md | document.md |
 | 任务 | task.md（多任务时 task-001.md） | task.md |
+
+## 路由规范
+
+索引文件只存放路由，不存放内容。按需访问，避免上下文膨胀：`[name](path/to/target)`
 
 ## 语言
 

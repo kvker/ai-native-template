@@ -163,7 +163,6 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 **行为**：
 1. 基于设计文档，产出精确的技术规范
 2. 包含数据模型、接口定义、变更清单
-3. 遵循 `convention/coding-style.md` 编码规范
 
 **产出物**：`workspace/{YYYYMMDD}__{feature-name}/tech-spec/tech-spec.md`
 
@@ -198,9 +197,8 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 
 **行为**：
 1. 按 tech-spec 中的变更清单逐项实现
-2. 遵循 `convention/coding-style.md` 编码规范
-3. 使用 Context7 MCP (`/photonstorm/phaser3`) 查询 Phaser API，不要杜撰
-4. 如遇 tech-spec 未覆盖的问题，记录决策到 implementation 记录中
+2. 使用 Context7 MCP 查询第三方库 API，不要杜撰
+3. 如遇 tech-spec 未覆盖的问题，记录决策到 implementation 记录中
 
 **产出物**：
 - `target/` 下的实际代码变更
