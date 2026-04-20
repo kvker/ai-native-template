@@ -5,6 +5,7 @@
       "Edit",
       "Edit(**/*)",
       "Write(.claude/**)",
+      "Bash(mkdir *)",
       "Bash(find *)",
       "Bash(cd *)",
       "Bash(grep *)",
