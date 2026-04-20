@@ -4,6 +4,7 @@
     "allow": [
       "Edit",
       "Edit(**/*)",
+      "Write(.claude/**)",
       "Bash(find *)",
       "Bash(cd *)",
       "Bash(grep *)",
