@@ -1,6 +1,6 @@
 ---
 name: an-init
-description: 将现有工程转换为 AI Native 项目结构。当用户想要：1) 将现有项目转换为 AI Native 格式 2) 为已有代码生成 background/rules/workspace 文档 3) 执行 /an-init 命令 4) 让 AI 理解并接管现有项目 时触发此技能。
+description: 将现有工程转换为 AI Native 项目结构。当用户想要：1) 将现有项目转换为 AI Native 格式 2) 为已有代码生成 background/rules/workspace 文档 3) 执行 /an-init 命令 4) 让 AI 理解并接管现有项目 时触发此技能。**始终使用中文与用户沟通。**
 ---
 
 # AI Native 项目初始化
