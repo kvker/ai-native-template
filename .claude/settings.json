@@ -5,6 +5,8 @@
       "Edit",
       "Edit(**/*)",
       "Write(.claude/**)",
+      "Write(background/**)",
+      "Write(workspace/**)",
       "Bash(mkdir *)",
       "Bash(find *)",
       "Bash(cd *)",
