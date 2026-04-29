@@ -1,6 +1,6 @@
 ---
-name: archive-workspace
-description: 将已完成的 workspace 文件夹归档到 workspace/archive/ 目录。当用户想要：1) 归档一个 workspace 2) 清理已完成的工作区 3) 执行 /archive-workspace 命令 4) 提到"归档"、"archive"、"整理工作区"、"清理工作区"、"完成归档"等关键词时触发此技能。即使用户没有明确说"归档"，只要是"这个任务做完了收一下"、"把 xxx workspace 归档"之类的意图，都应使用此技能。
+name: an-archive
+description: 将已完成的 workspace 文件夹归档到 workspace/archive/ 目录。当用户想要：1) 归档一个 workspace 2) 清理已完成的工作区 3) 执行 /an-archive 命令 4) 提到"归档"、"整理工作区"、"清理工作区"、"完成归档"等关键词时触发此技能。即使用户没有明确说"归档"，只要是"这个任务做完了收一下"、"把 xxx workspace 归档"之类的意图，都应使用此技能。
 ---
 
 # Workspace 归档

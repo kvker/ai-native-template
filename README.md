@@ -26,6 +26,7 @@ cp -r /path/to/backend ./target/
 ```
 
 AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `.claude/rules/` 规范。
+初始化时会主动询问是否使用子代理并行处理“可执行命令清单”和“背景扫描”。未启用子代理时，会在主流程中顺序执行同样脚本。
 
 ### 方式二：从零开始
 
@@ -69,12 +70,13 @@ your-project/
 │   ├── structure.md    # 目录结构规范（生成）
 │   └── code-style.md   # 代码风格规范（生成）
 ├── background/
+│   ├── CLAUDE.md       # 背景目录说明
 │   ├── product/        # 产品背景
 │   │   └── overview.md
 │   └── tech/           # 技术背景
 │       └── stack.md
 ├── workspace/          # 活跃工作区
-│   └── README.md
+│   └── CLAUDE.md       # 工作区目录说明
 └── target/             # 实际代码（每个子目录为一个工程）
     ├── frontend/       # 前端工程（示例）
     └── backend/        # 后端工程（示例）
@@ -87,7 +89,10 @@ your-project/
 | `/an-init` | 迁移现有项目，分析 target/ 下各工程的代码生成文档 |
 | `/an-task` | 标准化流程实现 feature |
 | `/an-task-split` | 将大任务拆分为多个子任务 |
-| `/refresh-background` | 根据实际代码反向更新 background 背景知识库 |
+| `/an-recipes` | 探测并生成可执行命令清单 |
+| `/an-refresh` | 根据实际代码反向更新 background 背景知识库 |
+| `/an-eval` | 根据验收标准、测试证据、风险关闭和交付状态评价任务质量 |
+| `/an-archive` | 将已完成的工作区归档到 `workspace/archive/` |
 
 > 从零开始不需要命令，直接告诉 AI 你的需求即可。
 
@@ -101,6 +106,26 @@ raw-input → requirements → design → tech-spec → implementation → testi
 1. 生成对应文档
 2. 等待用户确认
 3. 进入下一阶段
+
+## 可执行命令清单
+
+初始化后可生成 `.claude/recipes.json`：
+
+```bash
+node .claude/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .claude/recipes.json
+```
+
+任务实现后，AI 优先从该文件选择最小验证命令，而不是临时猜测 `npm test` 或 `pnpm build`。
+
+## 任务质量评价
+
+L2/L3 任务完成后运行：
+
+```bash
+node .claude/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+```
+
+质量评价会输出 `PASS`、`REVIEW` 或 `BLOCKED`，分别表示“可交付”“建议复核”“不应关闭”。
 
 ## 核心原理
 

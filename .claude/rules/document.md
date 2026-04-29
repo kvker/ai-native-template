@@ -26,7 +26,7 @@ paths:
 
 | 类型 | 规则 | 示例 |
 |------|------|------|
-| 索引 | README.md / CLAUDE.md | README.md |
+| 索引 | CLAUDE.md | CLAUDE.md |
 | 规范 | 小写-连字符.md | document.md |
 | 任务 | task.md（多任务时 task-001.md） | task.md |
 
@@ -38,4 +38,4 @@ paths:
 
 - 正文：中文
 - 代码/注释：英文
-- 技术术语：保留原文（API、JSON）
+- 技术术语：必要时保留原文（API、JSON），面向人读的说明尽量使用中文
