@@ -2,6 +2,20 @@
 
 `workspace/` 存放活跃任务工作区。每个任务使用独立目录，命名为 `YYYYMMDD__feature-name`。
 
+## 约定结构
+
+```text
+workspace/{YYYYMMDD}__{feature-name}/
+├── AGENTS.md
+├── raw-input/
+├── requirements/
+├── design/
+├── tech-spec/
+├── implementation/
+├── testing/
+└── deployment/
+```
+
 ## Codex 行为
 
 - 新任务优先创建独立工作区，并在根 `AGENTS.md` 的活跃工作区表中登记。

@@ -92,8 +92,7 @@ your-project/
 │   └── tech/
 │       └── stack.md
 ├── workspace/
-│   ├── AGENTS.md
-│   └── README.md
+│   └── AGENTS.md
 └── target/
     ├── AGENTS.md
     ├── frontend/

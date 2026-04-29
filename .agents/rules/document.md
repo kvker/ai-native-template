@@ -24,7 +24,7 @@
 | 类型 | 规则 | 示例 |
 |------|------|------|
 | Codex 入口 | AGENTS.md | AGENTS.md |
-| 索引 | README.md 或 AGENTS.md | README.md |
+| 索引 | AGENTS.md | AGENTS.md |
 | 规范 | 小写连字符 | code-style.md |
 | 任务 | task.md；多任务用编号 | task-001.md |
 | 报告 | 小写连字符 | testing-report.md |

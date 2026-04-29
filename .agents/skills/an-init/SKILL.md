@@ -136,8 +136,10 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 | `.agents/rules/structure.md` | `target/` 实际目录结构和工程职责 |
 | `.agents/rules/code-style.md` | 从代码推断的命名、文件组织、测试和格式化约定 |
 | `.agents/recipes.json` | 由 `$an-recipes` 探测得到的验证、构建、生成和开发命令清单 |
-| `workspace/README.md` | 工作区索引和创建规则 |
+| `workspace/AGENTS.md` | 工作区索引、创建规则和目录级 Codex 行为 |
 | `target/AGENTS.md` | 实际代码目录的 Codex 行为约束 |
+
+初始化完成后不保留 `background/README.md` 或 `workspace/README.md`。目录级说明统一放入对应的 `AGENTS.md`，避免 README 与 AGENTS 双入口漂移。
 
 `AGENTS.md` 的项目背景段落建议格式：
 
