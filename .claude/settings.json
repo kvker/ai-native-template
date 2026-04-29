@@ -3,7 +3,7 @@
     "defaultMode": "acceptEdits",
     "allow": [
       "Edit",
-      "Edit(**/*)",
+      "Edit(.claude/**)",
       "Write(.claude/**)",
       "Write(background/**)",
       "Write(workspace/**)",
