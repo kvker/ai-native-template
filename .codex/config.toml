@@ -1,0 +1,9 @@
+# Conservative project defaults for this AI Native template.
+# Codex only uses project-local configuration after the project is trusted.
+
+sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+web_search = "cached"
+
+[features]
+multi_agent = true

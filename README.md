@@ -1,114 +1,169 @@
-# AI Native 项目模板
+# AI Native Codex 项目模板
 
-这是一个 AI Native 项目的模板基座，用于快速搭建 AI 友好的工程结构。
+这是一个面向 Codex 的 AI Native 项目模板，用于把已有软件工程转换成 AI 优先的软件工程，或从零开始搭建可由 Codex 长期维护的工程结构。
 
-> 注意：本 README 是给人类阅读的，与 AI 无关。在实际的 AI Native 项目中，不需要这个文件。
+AI Native 的核心不变：AI 是目标开发者；文档和目录不是为了展示，而是为了让 AI 获得高质量、低噪声、可追踪的工程上下文。
 
 ## 快速开始
 
 ### 方式一：迁移现有项目
 
-如果你有一个现有的项目想要转换为 AI Native 结构：
-
 ```bash
-# 1. 下载这个模板
+# 1. 下载或复制这个模板
 
-# 2. 将你的项目代码复制到 target 目录
-# 单项目（复制到 target/ 下，会保留原始文件夹名）：
-cp -r /path/to/your-project ./target/
+# 2. 将现有项目复制到 target/
+# 单项目：
+cp -r /path/to/your-project ./target/my-project
 
-# 多项目（前后端分离等）：
-cp -r /path/to/frontend ./target/
-cp -r /path/to/backend ./target/
+# 多项目：
+cp -r /path/to/frontend ./target/frontend
+cp -r /path/to/backend ./target/backend
 
-# 3. 执行初始化命令
-/an-init
+# 3. 在该目录启动 Codex
+codex -C .
 ```
 
-AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `.claude/rules/` 规范。
+然后在 Codex 中执行：
+
+```text
+$an-init
+```
+
+Codex 会分析 `target/` 下的每个一级子目录，生成或更新 `background/`、`.agents/rules/`、`target/AGENTS.md` 和根 `AGENTS.md`。
+
+初始化时 Codex 会主动询问是否使用子代理并行处理“可执行命令清单”和“背景扫描”。你也可以在提示中提前说明：
+
+```text
+$an-init，用子代理并行处理可执行命令清单和背景扫描
+```
+
+如果同意，主代理负责整合和写文档，命令清单子代理负责生成 `.agents/recipes.json`，背景扫描子代理负责抽取依赖包、路由、接口、数据模型和测试线索。未启用子代理时，Codex 会在主流程中顺序执行同样脚本。
 
 ### 方式二：从零开始
 
-如果你要从零开始一个新项目：
+直接在 Codex 中描述你的需求，或显式使用：
 
-1. 复制模板到新项目目录
-2. 直接告诉 AI 你的需求，比如：「帮我开发一个用户登录功能」
-3. AI 会按照工作流，从需求分析到代码生成逐步引导你
-
-**流程**：
-```
-/an-task 需求描述 → workspace/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → target/
+```text
+$an-task 开发一个用户登录功能
 ```
 
-AI 会在 `workspace/` 中创建任务工作区目录，按阶段生成文档，最终在 `target/` 中生成代码。
+标准工作流：
+
+```text
+原始输入 -> 需求 -> 设计 -> 技术规范 -> 实现 -> 测试 -> 发布归档
+```
+
+每个任务会在 `workspace/{YYYYMMDD}__{feature-name}/` 下沉淀过程文档，最终代码写入 `target/`。
 
 ## 目录结构
 
-### 模板基座（初始化前）
+### 模板基座
 
-```
+```text
 ai-native-template/
-├── CLAUDE.md           # AI 入口文件
-├── .claude/rules/      # 规范定义（自动生效）
-│   ├── principles.md   # 核心原则
-│   ├── workflow.md     # 工作流规范
-│   └── document.md     # 文档编写规范
-├── background/         # 背景知识（空，等待填充）
-├── workspace/          # 活跃工作区（空）
-└── target/             # 实际代码（空）
+├── AGENTS.md             # Codex 仓库入口文件
+├── .codex/
+│   └── config.toml       # Codex 项目默认配置
+├── .agents/
+│   ├── rules/            # AI Native 规范文档
+│   └── skills/           # Codex 技能
+├── background/           # 稳定背景知识
+├── workspace/            # 活跃任务工作区
+└── target/               # 实际代码目录
 ```
 
-### 初始化后（执行 /an-init）
+### 初始化后
 
-```
+```text
 your-project/
-├── CLAUDE.md           # AI 入口文件（已填充项目背景）
-├── .claude/rules/      # 规范（自动生效）
-│   ├── workflow.md     # 工作流规范
-│   ├── document.md     # 文档编写规范
-│   ├── structure.md    # 目录结构规范（生成）
-│   └── code-style.md   # 代码风格规范（生成）
+├── AGENTS.md
+├── .agents/
+│   ├── rules/
+│   │   ├── principles.md
+│   │   ├── workflow.md
+│   │   ├── document.md
+│   │   ├── structure.md
+│   │   └── code-style.md
+│   └── skills/
 ├── background/
-│   ├── product/        # 产品背景
+│   ├── AGENTS.md
+│   ├── product/
 │   │   └── overview.md
-│   └── tech/           # 技术背景
+│   └── tech/
 │       └── stack.md
-├── workspace/          # 活跃工作区
+├── workspace/
+│   ├── AGENTS.md
 │   └── README.md
-└── target/             # 实际代码（每个子目录为一个工程）
-    ├── frontend/       # 前端工程（示例）
-    └── backend/        # 后端工程（示例）
+└── target/
+    ├── AGENTS.md
+    ├── frontend/
+    └── backend/
 ```
 
-## 可用命令
+## 可用技能
 
-| 命令 | 用途 |
+| 技能 | 用途 |
 |------|------|
-| `/an-init` | 迁移现有项目，分析 target/ 下各工程的代码生成文档 |
-| `/an-task` | 标准化流程实现 feature |
-| `/an-task-split` | 将大任务拆分为多个子任务 |
-| `/refresh-background` | 根据实际代码反向更新 background 背景知识库 |
+| `$an-init` | 迁移现有项目，分析 `target/` 并生成 AI Native 背景和规范 |
+| `$an-task` | 按 AI Native 工作流推进功能、修复、重构、配置或文档任务 |
+| `$an-task-split` | 将大型任务拆分为可独立推进的子任务 |
+| `$an-recipes` | 探测并生成 Codex 可执行的测试、构建、代码检查、类型检查、代码生成命令清单 |
+| `$an-refresh` | 根据实际代码和已完成任务刷新背景知识 |
+| `$an-eval` | 根据验收标准、测试证据、风险关闭和交付状态评价任务质量 |
+| `$an-archive` | 将已完成的工作区归档到 `workspace/archive/` |
 
-> 从零开始不需要命令，直接告诉 AI 你的需求即可。
+## 可执行命令清单
 
-## 工作流
+初始化后可生成 `.agents/recipes.json`：
 
+```bash
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
 ```
-raw-input → requirements → design → tech-spec → implementation → testing → deployment
+
+任务实现后，Codex 优先从该文件选择最小验证命令，而不是临时猜测 `npm test` 或 `pnpm build`。
+
+## 背景自动刷新
+
+`$an-refresh` 内置结构化扫描脚本：
+
+```bash
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
 ```
 
-每个阶段 AI 会：
-1. 生成对应文档
-2. 等待用户确认
-3. 进入下一阶段
+它会从依赖包、路由、接口、数据模型、测试报告中抽取摘要，再由 Codex 增量更新 `background/` 和 `.agents/rules/`。
+
+## 任务质量评价
+
+L2/L3 任务完成后运行：
+
+```bash
+node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+```
+
+质量评价会输出 `PASS`、`REVIEW` 或 `BLOCKED`，分别表示“可交付”“建议复核”“不应关闭”，避免只凭“代码改完了”就关闭任务。
+
+## Codex 适配点
+
+| Claude Code 版 | Codex 版 |
+|----------------|----------|
+| `CLAUDE.md` 入口 | `AGENTS.md` 仓库入口 |
+| `.claude/skills/` | `.agents/skills/` |
+| `.claude/rules/` path frontmatter | `.agents/rules/` + 嵌套 `AGENTS.md` 路由 |
+| `.claude/settings.json` 权限 | `.codex/config.toml` + Codex 沙箱和审批 |
+| slash command 习惯 | `$skill` 显式调用，或由 Codex 根据技能描述触发 |
+| Explore agent 作为流程策略 | 子代理仅在用户明确要求代理协作时使用 |
 
 ## 核心原理
 
-1. **AI 是目标开发者**：文档结构为 AI 设计，不是为人类
-2. **有效上下文**：上下文质量决定 AI 输出质量
-3. **规范驱动开发**：先定义规范，再由 AI 执行
+1. **AI 是目标开发者**：工程入口、背景、规范和任务文档都围绕 AI 执行效率设计。
+2. **有效上下文**：入口文件只存路由和长期约定，细节按需读取。
+3. **规范驱动开发**：复杂任务先明确需求、方案和变更清单，再进入实现。
+4. **结果可追踪**：每个任务都能从原始输入追踪到实现和验证。
+5. **代码事实优先**：当背景文档与代码冲突时，以 `target/` 的实际代码和测试结果为准。
 
 ## 相关入口
 
-- [Claude 入口文件](CLAUDE.md) - AI 的入口文件
-- [工程入口](target/) - 实际代码目录
+- [Codex 入口文件](AGENTS.md)
+- [背景知识库](background/)
+- [任务工作区](workspace/)
+- [实际代码目录](target/)
