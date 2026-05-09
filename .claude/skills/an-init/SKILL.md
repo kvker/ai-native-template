@@ -175,6 +175,8 @@ node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 
 {用户输入的产品描述}
 
+> **缩写说明**：对话中出现的 "AN" 一般指 AI Native 的缩写。
+
 ### 工程列表
 
 | 工程 | 类型 | 描述 |
@@ -410,6 +412,7 @@ workspace/{YYYYMMDD}__{feature-name}/
 
 1. 删除 `./README.md`（模板说明文档，仅供人类阅读）
 2. 删除 `background/README.md` 和 `workspace/README.md`（如存在），目录级说明统一使用 `CLAUDE.md`
+3. 删除 `target/.gitkeep`（初始化占位文件，如存在）
 
 如果未使用命令清单子代理，生成文档后运行命令探测：
 
