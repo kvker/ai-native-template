@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 该项目是 AI Native 工程，即 AI 直接使用的工程项目。
 
@@ -15,6 +15,7 @@
 | 目录 | 用途 | AI 行为 |
 |------|------|---------|
 | [background](background/) | 静态背景知识 | 只读，了解领域知识 |
+| [convention](convention/) | 项目约定规范 | 开始任务前按需读取，作为行为约束 |
 | [workspace](workspace/) | 活跃工作区 | 频繁读写，跟踪进度 |
 | [target](target/) | 实际代码目录 | 实现阶段才访问，每个子目录为一个独立工程 |
 
@@ -27,6 +28,18 @@
 - 禁止自行脑补未提及的需求、功能或业务逻辑。
 - 所有背景知识必须来自代码事实或用户明确输入。
 - 从代码反推的信息要标注来源；无法确认的信息标记为"待确认"。
+- 不主动读取或输出 `.env`、`secrets/`、credentials、密钥、token 等敏感文件；除非用户明确授权且任务必要。
+
+## 必读规范
+
+开始任务前按需读取以下规范：
+
+| 规范 | 用途 |
+|------|------|
+| [principles](convention/principles.md) | AI Native 核心原则 |
+| [workflow](convention/workflow.md) | 标准工作流 |
+| [flow-policy](convention/flow-policy.md) | 流程轻重判断 |
+| [document](convention/document.md) | 文档编写规范 |
 
 ## 当前活跃 Workspace
 

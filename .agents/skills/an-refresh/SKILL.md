@@ -39,13 +39,13 @@ description: 根据实际代码和结果反向更新 background 背景知识库�
 优先运行结构化扫描脚本：
 
 ```bash
-node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
 ```
 
 需要给后续处理保存 JSON 时：
 
 ```bash
-node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --write workspace/background-scan.json
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --write workspace/background-scan.json
 ```
 
 1. 读取 `background/` 下所有文档，了解当前记录的状态
@@ -67,7 +67,7 @@ node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 | 路由文件和控制器 | 页面路由、接口端点 | `background/features.md`、`background/domains.md` |
 | 数据模型、实体、迁移文件 | 数据模型和领域对象 | `background/domains.md` |
 | 测试报告、质量评价报告 | 测试证据和质量状态 | `background/features.md` |
-| `.claude/recipes.json` | 验证、构建、代码生成命令 | `.claude/rules/code-style.md` 或 `background/tech/stack.md` |
+| `.agents/recipes.json` | 验证、构建、代码生成命令 | `convention/code-style.md` 或 `background/tech/stack.md` |
 
 **产出物**：向用户展示扫描发现，格式如下：
 
@@ -155,7 +155,7 @@ node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 - background/tech/code-style.md
 ```
 
-2. 提醒用户是否需要同步更新 `.claude/rules/` 下的规范文件
+2. 提醒用户是否需要同步更新 `convention/` 下的规范文件
 
 ---
 
@@ -166,8 +166,8 @@ node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 | tech | 技术栈、依赖版本、工具链 | `background/tech/stack.md` |
 | product | 产品功能、模块描述 | `background/product/overview.md` |
 | domains | 领域模型、业务规则 | `background/domains.md` |
-| structure | 目录结构规范 | `.claude/rules/structure.md` |
-| code-style | 代码风格 | `.claude/rules/code-style.md` |
+| structure | 目录结构规范 | `convention/structure.md` |
+| code-style | 代码风格 | `convention/code-style.md` |
 | features | 功能状态追踪 | `background/features.md` |
 | all | 全部检查 | 以上所有 |
 

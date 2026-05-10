@@ -2,7 +2,8 @@
 paths:
   - "workspace/**/*.md"
   - "background/**/*.md"
-  - "CLAUDE.md"
+  - "convention/**/*.md"
+  - "AGENTS.md"
 ---
 
 # 文档编写规范
@@ -26,7 +27,7 @@ paths:
 
 | 类型 | 规则 | 示例 |
 |------|------|------|
-| 索引 | CLAUDE.md | CLAUDE.md |
+| 索引 | AGENTS.md | AGENTS.md |
 | 规范 | 小写-连字符.md | document.md |
 | 任务 | task.md（多任务时 task-001.md） | task.md |
 

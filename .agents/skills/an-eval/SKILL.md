@@ -10,7 +10,7 @@ description: 按验收标准、实现可追踪性、测试证据、风险关闭�
 ## 快速使用
 
 ```bash
-node .claude/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
 ```
 
 输出 Markdown 质量报告，可保存到：

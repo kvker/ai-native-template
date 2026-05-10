@@ -37,7 +37,7 @@ description: 根据输入的任务描述，按 AI Native 标准工作流驱动�
 | 用户已有明确方案或接口约定 | L2 标准开发 | 保存原始输入，从技术规范开始，再实现、验证、质量评价 |
 | 需求模糊、新功能、跨模块、架构决策 | L3 完整流程 | raw-input → requirements → design → tech-spec → implementation → testing → deployment → 质量评价 |
 
-判断依据见 `.claude/rules/flow-policy.md`。判断后先告诉用户将采用哪个等级。L0/L1 可直接完成后总结；L2 默认技术规范后确认；L3 需要关键阶段确认。
+判断依据见 `convention/flow-policy.md`。判断后先告诉用户将采用哪个等级。L0/L1 可直接完成后总结；L2 默认技术规范后确认；L3 需要关键阶段确认。
 
 ## 升级条件
 
@@ -72,7 +72,7 @@ raw-input → requirements → design → tech-spec → implementation → testi
 ### 通用规则
 
 1. 每个阶段在 `workspace/{YYYYMMDD}__{feature-name}/` 对应子目录下产出文件（日期为创建当天的 `YYYYMMDD` 格式，如 `20260402__user-login`）
-2. 每阶段结束：确认产出物 → 更新工作区 CLAUDE.md 索引 → 询问用户是否进入下一阶段
+2. 每阶段结束：确认产出物 → 更新工作区 AGENTS.md 索引 → 询问用户是否进入下一阶段
 3. 用户可随时暂停、回退、修改之前的产出
 4. 不要启动前端服务，默认已经启动
 
@@ -231,7 +231,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 
 **行为**：
 1. 按 tech-spec 中的测试计划编写测试
-2. 优先读取 `.claude/recipes.json` 选择验证命令；不存在时运行 `/an-recipes` 探测
+2. 优先读取 `.agents/recipes.json` 选择验证命令；不存在时运行 `/an-recipes` 探测
 3. 记录测试结果
 
 **产出物**：`workspace/{YYYYMMDD}__{feature-name}/testing/testing-report.md`
@@ -262,7 +262,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 1. L2/L3 在 testing 后运行：
 
    ```bash
-   node .claude/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+   node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
    ```
 
 2. 将输出保存为 `workspace/{YYYYMMDD}__{feature-name}/testing/eval-report.md`
@@ -276,7 +276,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 
 **行为**：
 1. 更新 `background/features.md` 中的功能状态
-2. 更新项目根 `CLAUDE.md` 的活跃 Workspace 表
+2. 更新项目根 `AGENTS.md` 的活跃 Workspace 表
 3. 产出部署说明（如有必要）
 
 **产出物**：`workspace/{YYYYMMDD}__{feature-name}/deployment/release-notes.md`
@@ -306,7 +306,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 
 ## 工作区索引
 
-每创建一个新工作区，同步更新项目根 `CLAUDE.md` 的活跃 Workspace 表：
+每创建一个新工作区，同步更新项目根 `AGENTS.md` 的活跃 Workspace 表：
 
 ```markdown
 | Workspace | 描述 | 状态 |
@@ -324,5 +324,5 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 |------|------|
 | 用户中途想修改之前阶段产出 | 回到对应阶段，修改后重新确认，评估对后续阶段的影响 |
 | 用户想跳过某个阶段 | 允许跳过，但告知可能的风险 |
-| 用户想暂停 | 保存当前进度到工作区 CLAUDE.md，下次可恢复 |
+| 用户想暂停 | 保存当前进度到工作区 AGENTS.md，下次可恢复 |
 | 代码实现遇到 tech-spec 未覆盖的问题 | 记录决策，必要时回退更新 tech-spec |

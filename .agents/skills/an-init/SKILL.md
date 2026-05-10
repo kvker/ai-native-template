@@ -1,6 +1,6 @@
 ---
 name: an-init
-description: 将现有工程转换为 AI Native 项目结构。当用户想要：1) 将现有项目转换为 AI Native 格式 2) 为已有代码生成 background/rules/workspace 文档 3) 执行 /an-init 命令 4) 让 AI 理解并接管现有项目 时触发此技能。**始终使用中文与用户沟通。**
+description: 将现有工程转换为 AI Native 项目结构。当用户想要：1) 将现有项目转换为 AI Native 格式 2) 为已有代码生成 background/convention/workspace 文档 3) 执行 /an-init 命令 4) 让 AI 理解并接管现有项目 时触发此技能。**始终使用中文与用户沟通。**
 ---
 
 # AI Native 项目初始化
@@ -36,7 +36,7 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
    ```
    我可以用两个子代理并行处理初始化中的独立扫描：
 
-   1. 命令清单子代理：探测测试、构建、代码检查、类型检查、代码生成命令并生成 .claude/recipes.json
+   1. 命令清单子代理：探测测试、构建、代码检查、类型检查、代码生成命令并生成 .agents/recipes.json
    2. 背景扫描子代理：抽取依赖包、路由、接口、数据模型、测试报告线索
 
    是否使用子代理并行处理这两项？如果不用，我会在主流程中顺序执行同样脚本。
@@ -56,15 +56,15 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
 
 | 执行者 | 职责 | 输出 |
 |--------|------|------|
-| 主代理 | 识别工程、提问、合并文档、最终报告 | `CLAUDE.md`、`background/`、`.claude/rules/` |
-| 命令清单子代理 | 探测测试、构建、代码检查、类型检查、代码生成命令 | `.claude/recipes.json` 和命令摘要 |
+| 主代理 | 识别工程、提问、合并文档、最终报告 | `AGENTS.md`、`background/`、`convention/` |
+| 命令清单子代理 | 探测测试、构建、代码检查、类型检查、代码生成命令 | `.agents/recipes.json` 和命令摘要 |
 | 背景扫描子代理 | 抽取依赖包、路由、接口、数据模型、测试报告线索 | 背景扫描摘要 |
 
 命令清单子代理任务：
 
 ```text
 在当前仓库中运行：
-node .claude/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .claude/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
 
 返回：
 1. 识别到的工程和命令数量
@@ -76,7 +76,7 @@ node .claude/skills/an-recipes/scripts/detect-recipes.mjs --root target --write 
 
 ```text
 在当前仓库中运行：
-node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
 
 返回：
 1. 依赖包、脚本、依赖摘要
@@ -168,7 +168,7 @@ node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 
 > **已有文档处理**：如果目标文件已存在（如重复执行 an-init），基于实际情况合并——保留有效内容，补充新增信息，删除过时内容。
 
-#### CLAUDE.md（更新项目背景）
+#### AGENTS.md（更新项目背景）
 
 ```markdown
 ## 项目背景
@@ -182,6 +182,13 @@ node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 | 工程 | 类型 | 描述 |
 |------|------|------|
 | {target下的子目录名} | {项目类型} | {简要说明} |
+
+### 必读文档
+
+| 路径 | 描述 |
+|------|------|
+| background/ | 项目背景知识 |
+| convention/ | 项目约定规范 |
 
 ### 技术栈
 
@@ -266,7 +273,7 @@ node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 | ... | ... |
 ```
 
-#### background/CLAUDE.md
+#### background/AGENTS.md
 
 ```markdown
 # background 目录说明
@@ -281,14 +288,6 @@ node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 - 从代码反推的信息要标注来源；无法确认的信息标记为“待确认”。
 - 背景文档与 `target/` 代码冲突时，先以代码事实为准，并在更新摘要中说明冲突。
 ```
-
-#### .claude/rules/structure.md
-
-```markdown
----
-paths:
-  - "target/**"
----
 
 # 目录结构规范
 
@@ -306,16 +305,6 @@ paths:
 
 > 多工程场景：`paths` 保持 `["target/**"]` 即可覆盖所有工程。
 
-#### .claude/rules/code-style.md
-
-```markdown
----
-paths:
-  - "target/**/*.{ts,tsx,js,jsx}"
-  - "target/**/*.py"
-  - "target/**/*.go"
-  - "target/**/*.java"
----
 
 # 代码风格规范
 
@@ -331,11 +320,11 @@ paths:
 > 多工程场景：保留所有工程使用的文件后缀。
 > 示例：`paths: ["target/**/*.{ts,tsx,js,jsx}", "target/**/*.java"]`
 
-#### .claude/recipes.json
+#### .agents/recipes.json
 
 由 `/an-recipes` 或命令清单子代理探测生成，记录验证、构建、生成和开发命令清单。
 
-#### workspace/CLAUDE.md
+#### workspace/AGENTS.md
 
 ```markdown
 # workspace 目录说明
@@ -345,7 +334,7 @@ paths:
 ## 约定结构
 
 workspace/{YYYYMMDD}__{feature-name}/
-├── CLAUDE.md
+├── AGENTS.md
 ├── raw-input/
 ├── requirements/
 ├── design/
@@ -356,14 +345,14 @@ workspace/{YYYYMMDD}__{feature-name}/
 
 ## AI 行为
 
-- 新任务优先创建独立工作区，并在根 `CLAUDE.md` 的活跃 Workspace 表中登记。
+- 新任务优先创建独立工作区，并在根 `AGENTS.md` 的活跃 Workspace 表中登记。
 - 工作区只存过程文档、决策、报告和临时分析，不存放最终产品代码。
-- 每个工作区可包含自己的 `CLAUDE.md` 作为任务索引。
+- 每个工作区可包含自己的 `AGENTS.md` 作为任务索引。
 - 任务完成后，可使用 `/an-archive` 移动到 `workspace/archive/`。
 - 恢复历史任务时先匹配目录名，再读取对应工作区内容，避免无谓加载大量文档。
 ```
 
-初始化完成后不保留 `background/README.md` 或 `workspace/README.md`。目录级说明统一放入对应的 `CLAUDE.md`，避免 README 与 CLAUDE 双入口漂移。
+初始化完成后不保留 `background/README.md` 或 `workspace/README.md`。目录级说明统一放入对应的 `AGENTS.md`，避免 README 与 Codex 双入口漂移。
 
 ---
 
@@ -389,19 +378,19 @@ workspace/{YYYYMMDD}__{feature-name}/
 - backend：NestJS 后端 - Node.js + PostgreSQL
 
 生成文件：
-- CLAUDE.md（更新项目背景）
+- AGENTS.md（更新项目背景）
 - background/product/overview.md
 - background/tech/stack.md（包含 frontend 和 backend 两节）
-- .claude/rules/structure.md（包含两个工程的目录结构）
-- .claude/rules/code-style.md（paths 包含 .ts 和 .js 文件）
-- .claude/recipes.json（可执行命令清单）
-- background/CLAUDE.md
-- workspace/CLAUDE.md
+- convention/structure.md（包含两个工程的目录结构）
+- convention/code-style.md（paths 包含 .ts 和 .js 文件）
+- .agents/recipes.json（可执行命令清单）
+- background/AGENTS.md
+- workspace/AGENTS.md
 
 下一步：
 1. 在 workspace/ 中创建你的第一个任务工作区
 2. 参考 background/ 了解项目背景
-3. 规范已写入 .claude/rules/，编辑代码和目录结构时自动生效
+3. 规范已写入 convention/，编辑代码和目录结构时自动生效
 ```
 
 ---
@@ -411,19 +400,19 @@ workspace/{YYYYMMDD}__{feature-name}/
 删除模板专用文件：
 
 1. 删除 `./README.md`（模板说明文档，仅供人类阅读）
-2. 删除 `background/README.md` 和 `workspace/README.md`（如存在），目录级说明统一使用 `CLAUDE.md`
+2. 删除 `background/README.md` 和 `workspace/README.md`（如存在），目录级说明统一使用 `AGENTS.md`
 3. 删除 `target/.gitkeep`（初始化占位文件，如存在）
 
 如果未使用命令清单子代理，生成文档后运行命令探测：
 
 ```bash
-node .claude/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .claude/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
 ```
 
 如果未使用背景扫描子代理，需要本地运行背景扫描并将结果纳入文档：
 
 ```bash
-node .claude/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
 ```
 
 ---

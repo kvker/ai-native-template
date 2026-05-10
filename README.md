@@ -25,7 +25,7 @@ cp -r /path/to/backend ./target/
 /an-init
 ```
 
-AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `.claude/rules/` 规范。
+AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `convention/` 规范，并通过 `AGENTS.md` 路由给支持 AGENTS 的工具读取。
 初始化时会主动询问是否使用子代理并行处理“可执行命令清单”和“背景扫描”。未启用子代理时，会在主流程中顺序执行同样脚本。
 
 ### 方式二：从零开始
@@ -49,10 +49,10 @@ AI 会在 `workspace/` 中创建任务工作区目录，按阶段生成文档，
 
 ```
 ai-native-template/
-├── CLAUDE.md           # AI 入口文件
-├── .claude/rules/      # 规范定义（自动生效）
+├── AGENTS.md           # AI 入口文件
+├── convention/         # 规范定义（由 AGENTS.md 路由加载）
 │   ├── principles.md   # 核心原则
-│   ├── workflow.md     # 工作流规范
+│   ├── workflow.md      # 工作流规范
 │   └── document.md     # 文档编写规范
 ├── background/         # 背景知识（空，等待填充）
 ├── workspace/          # 活跃工作区（空）
@@ -63,20 +63,20 @@ ai-native-template/
 
 ```
 your-project/
-├── CLAUDE.md           # AI 入口文件（已填充项目背景）
-├── .claude/rules/      # 规范（自动生效）
-│   ├── workflow.md     # 工作流规范
+├── AGENTS.md           # AI 入口文件（已填充项目背景）
+├── convention/         # 规范（由 AGENTS.md 路由加载）
+│   ├── workflow.md      # 工作流规范
 │   ├── document.md     # 文档编写规范
 │   ├── structure.md    # 目录结构规范（生成）
 │   └── code-style.md   # 代码风格规范（生成）
 ├── background/
-│   ├── CLAUDE.md       # 背景目录说明
+│   ├── AGENTS.md       # 背景目录说明
 │   ├── product/        # 产品背景
 │   │   └── overview.md
 │   └── tech/           # 技术背景
 │       └── stack.md
 ├── workspace/          # 活跃工作区
-│   └── CLAUDE.md       # 工作区目录说明
+│   └── AGENTS.md       # 工作区目录说明
 └── target/             # 实际代码（每个子目录为一个工程）
     ├── frontend/       # 前端工程（示例）
     └── backend/        # 后端工程（示例）
@@ -109,10 +109,10 @@ raw-input → requirements → design → tech-spec → implementation → testi
 
 ## 可执行命令清单
 
-初始化后可生成 `.claude/recipes.json`：
+初始化后可生成 `.agents/recipes.json`：
 
 ```bash
-node .claude/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .claude/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
 ```
 
 任务实现后，AI 优先从该文件选择最小验证命令，而不是临时猜测 `npm test` 或 `pnpm build`。
@@ -122,7 +122,7 @@ node .claude/skills/an-recipes/scripts/detect-recipes.mjs --root target --write 
 L2/L3 任务完成后运行：
 
 ```bash
-node .claude/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
 ```
 
 质量评价会输出 `PASS`、`REVIEW` 或 `BLOCKED`，分别表示“可交付”“建议复核”“不应关闭”。
@@ -135,5 +135,5 @@ node .claude/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{fea
 
 ## 相关入口
 
-- [Claude 入口文件](CLAUDE.md) - AI 的入口文件
+- [AGENTS 入口文件](AGENTS.md) - AI 的入口文件
 - [工程入口](target/) - 实际代码目录

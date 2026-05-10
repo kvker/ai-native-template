@@ -101,7 +101,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 ```
 
 **检查点**：向用户展示拆分方案，等待用户审核确认。用户可能：
-- 确认拆分方案 → 为每个子任务创建独立工作区目录，更新 CLAUDE.md 索引
+- 确认拆分方案 → 为每个子任务创建独立工作区目录，更新 AGENTS.md 索引
 - 要求调整拆分 → 修改 split-plan 后重新确认
 - 选择其中部分子任务先推进 → 仅创建选定子任务的工作区
 
@@ -109,7 +109,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 
 ## 工作区索引
 
-确认拆分方案后，更新项目根 `CLAUDE.md` 的活跃 Workspace 表：
+确认拆分方案后，更新项目根 `AGENTS.md` 的活跃 Workspace 表：
 
 ```markdown
 | Workspace | 描述 | 状态 |

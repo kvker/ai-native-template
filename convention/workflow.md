@@ -45,10 +45,10 @@ raw-input → requirements → design → tech-spec → implementation → testi
 
 ## 可执行命令清单
 
-项目命令优先从 `.claude/recipes.json` 读取；不存在或过期时运行：
+项目命令优先从 `.agents/recipes.json` 读取；不存在或过期时运行：
 
 ```bash
-node .claude/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .claude/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
 ```
 
 实现后选择最小但有意义的命令进行验证。跨工程改动需要分别选择受影响工程的命令。
@@ -58,7 +58,7 @@ node .claude/skills/an-recipes/scripts/detect-recipes.mjs --root target --write 
 L2/L3 任务完成测试后运行：
 
 ```bash
-node .claude/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
 ```
 
 将输出保存为 `workspace/{feature}/testing/eval-report.md`。`BLOCKED` 表示不应归档，除非用户明确接受剩余风险。
