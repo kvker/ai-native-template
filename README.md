@@ -38,10 +38,10 @@ AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工
 
 **流程**：
 ```
-/an-task 需求描述 → workspace/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → target/
+/an-task 需求描述 → artifacts/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → target/
 ```
 
-AI 会在 `workspace/` 中创建任务工作区目录，按阶段生成文档，最终在 `target/` 中生成代码。
+AI 会在 `artifacts/` 中创建任务产出目录，按阶段生成文档，最终在 `target/` 中生成代码。
 
 ## 目录结构
 
@@ -55,7 +55,7 @@ ai-native-template/
 │   ├── workflow.md      # 工作流规范
 │   └── document.md     # 文档编写规范
 ├── background/         # 背景知识（空，等待填充）
-├── workspace/          # 活跃工作区（空）
+├── artifacts/          # 任务产出目录（空）
 └── target/             # 实际代码（空）
 ```
 
@@ -75,8 +75,8 @@ your-project/
 │   │   └── overview.md
 │   └── tech/           # 技术背景
 │       └── stack.md
-├── workspace/          # 活跃工作区
-│   └── AGENTS.md       # 工作区目录说明
+├── artifacts/          # 任务产出目录
+│   └── AGENTS.md       # 产出目录说明
 └── target/             # 实际代码（每个子目录为一个工程）
     ├── frontend/       # 前端工程（示例）
     └── backend/        # 后端工程（示例）
@@ -92,7 +92,7 @@ your-project/
 | `/an-recipes` | 探测并生成可执行命令清单 |
 | `/an-refresh` | 根据实际代码反向更新 background 背景知识库 |
 | `/an-eval` | 根据验收标准、测试证据、风险关闭和交付状态评价任务质量 |
-| `/an-archive` | 将已完成的工作区归档到 `workspace/archive/` |
+| `/an-archive` | 将已完成的任务产出归档到 `artifacts/archive/` |
 
 > 从零开始不需要命令，直接告诉 AI 你的需求即可。
 
@@ -122,7 +122,7 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write 
 L2/L3 任务完成后运行：
 
 ```bash
-node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+node .agents/skills/an-eval/scripts/evaluate-task.mjs artifacts/{YYYYMMDD}__{feature-name}
 ```
 
 质量评价会输出 `PASS`、`REVIEW` 或 `BLOCKED`，分别表示“可交付”“建议复核”“不应关闭”。

@@ -16,7 +16,7 @@
 |------|------|---------|
 | [background](background/) | 静态背景知识 | 只读，了解领域知识 |
 | [convention](convention/) | 项目约定规范 | 开始任务前按需读取，作为行为约束 |
-| [workspace](workspace/) | 活跃工作区 | 频繁读写，跟踪进度 |
+| [artifacts](artifacts/) | 任务产出目录 | 频繁读写，跟踪任务产出 |
 | [target](target/) | 实际代码目录 | 实现阶段才访问，每个子目录为一个独立工程 |
 
 ## 约定
@@ -41,12 +41,12 @@
 | [flow-policy](convention/flow-policy.md) | 流程轻重判断 |
 | [document](convention/document.md) | 文档编写规范 |
 
-## 当前活跃 Workspace
+## 当前活跃 Artifacts
 
-开发过程中按需创建，每个功能在 `workspace/{feature}/` 下独立管理。
+开发过程中按需创建，每个功能在 `artifacts/{feature}/` 下独立管理。
 
-| Workspace | 描述 | 状态 |
-|-----------|------|------|
+| Artifact | 描述 | 状态 |
+|----------|------|------|
 | - | - | - |
 
 ## Skill 路由
@@ -59,4 +59,4 @@
 | 探测或刷新测试、构建、代码检查、生成命令 | `/an-recipes` |
 | 根据代码和已完成任务刷新背景知识 | `/an-refresh` |
 | 评价任务是否真的完成 | `/an-eval` |
-| 归档已完成的工作区 | `/an-archive` |
+| 归档已完成的任务产出 | `/an-archive` |

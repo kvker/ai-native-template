@@ -12,19 +12,19 @@ description: 根据输入的任务描述，按 AI Native 标准工作流驱动�
 用户可通过以下方式提供 raw-input：
 
 - 直接输入文字描述
-- 引用文件路径（如 `workspace/xxx/raw-input/task.md`）
+- 引用文件路径（如 `artifacts/xxx/raw-input/task.md`）
 - 引用外部链接（issue、文档等）
 
 ## 查找已有任务
 
-仅在用户提到"之前做过"、"上次"、"继续之前的"、"之前有个"等引用历史任务的意图时，才执行查找。否则直接创建新工作区。
+仅在用户提到"之前做过"、"上次"、"继续之前的"、"之前有个"等引用历史任务的意图时，才执行查找。否则直接创建新的任务产出目录。
 
-1. **在 `workspace/` 中查找** — 用 `Glob` 匹配目录名中包含任务关键词的活跃工作区（只看目录名，不读文件内容）
-2. **未找到则查 `workspace/archive/`** — 同样只匹配目录名
+1. **在 `artifacts/` 中查找** — 用 `Glob` 匹配目录名中包含任务关键词的活跃产出目录（只看目录名，不读文件内容）
+2. **未找到则查 `artifacts/archive/`** — 同样只匹配目录名
 
-匹配到后向用户说明，询问：继续推进该任务，还是以此为参考创建新任务。用户确认后才读取该 workspace 的文件内容。未找到则正常创建新工作区。
+匹配到后向用户说明，询问：继续推进该任务，还是以此为参考创建新任务。用户确认后才读取该 artifact 的文件内容。未找到则正常创建新的任务产出目录。
 
-**注意**：只做目录名匹配，不搜索文件内容，避免大量 workspace 时消耗过多上下文。
+**注意**：只做目录名匹配，不搜索文件内容，避免大量 artifacts 时消耗过多上下文。
 
 ## 判断流程范围
 
@@ -32,7 +32,7 @@ description: 根据输入的任务描述，按 AI Native 标准工作流驱动�
 
 | 信号 | 范围 | 行为 |
 |------|------|------|
-| 拼写、注释、明显一行 bug、无行为风险的小配置 | L0 直接修复 | 不强制创建 workspace，直接改并验证 |
+| 拼写、注释、明显一行 bug、无行为风险的小配置 | L0 直接修复 | 不强制创建 artifacts，直接改并验证 |
 | 单模块、小范围、行为明确、有现成验证 | L1 快速修复 | 保存原始输入，直接实现，补充实现和测试记录 |
 | 用户已有明确方案或接口约定 | L2 标准开发 | 保存原始输入，从技术规范开始，再实现、验证、质量评价 |
 | 需求模糊、新功能、跨模块、架构决策 | L3 完整流程 | raw-input → requirements → design → tech-spec → implementation → testing → deployment → 质量评价 |
@@ -71,8 +71,8 @@ raw-input → requirements → design → tech-spec → implementation → testi
 
 ### 通用规则
 
-1. 每个阶段在 `workspace/{YYYYMMDD}__{feature-name}/` 对应子目录下产出文件（日期为创建当天的 `YYYYMMDD` 格式，如 `20260402__user-login`）
-2. 每阶段结束：确认产出物 → 更新工作区 AGENTS.md 索引 → 询问用户是否进入下一阶段
+1. 每个阶段在 `artifacts/{YYYYMMDD}__{feature-name}/` 对应子目录下产出文件（日期为创建当天的 `YYYYMMDD` 格式，如 `20260402__user-login`）
+2. 每阶段结束：确认产出物 → 更新产出目录 AGENTS.md 索引 → 询问用户是否进入下一阶段
 3. 用户可随时暂停、回退、修改之前的产出
 4. 不要启动前端服务，默认已经启动
 
@@ -83,15 +83,15 @@ raw-input → requirements → design → tech-spec → implementation → testi
 **目标**：保存用户的原始描述，不做加工。
 
 **行为**：
-1. 创建工作区目录 `workspace/{YYYYMMDD}__{feature-name}/`
-2. 将原始输入保存到 `workspace/{YYYYMMDD}__{feature-name}/raw-input/`
+1. 创建任务产出目录 `artifacts/{YYYYMMDD}__{feature-name}/`
+2. 将原始输入保存到 `artifacts/{YYYYMMDD}__{feature-name}/raw-input/`
 3. 如果是文字描述，保存为 `task.md`；若分解为多个任务，则使用 `task-001.md`、`task-002.md`...（或按用户指定名称）
 4. 如果引用了文件，读取并保存副本
 
 **产出物**：
 
 ```text
-workspace/{YYYYMMDD}__{feature-name}/raw-input/
+artifacts/{YYYYMMDD}__{feature-name}/raw-input/
 └── task.md              # 原始输入内容（多任务时 task-001.md, task-002.md...）
 ```
 
@@ -110,7 +110,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 1. 分析 raw-input，提炼出需求要点
 2. 产出结构化需求文档
 
-**产出物**：`workspace/{YYYYMMDD}__{feature-name}/requirements/requirements.md`
+**产出物**：`artifacts/{YYYYMMDD}__{feature-name}/requirements/requirements.md`
 
 ```markdown
 # {任务名称} 需求文档
@@ -151,7 +151,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 2. 如需了解现有代码，读取 `target/` 下相关文件
 3. 产出技术选型讨论文档
 
-**产出物**：`workspace/{YYYYMMDD}__{feature-name}/design/design.md`
+**产出物**：`artifacts/{YYYYMMDD}__{feature-name}/design/design.md`
 
 ```markdown
 # {任务名称} 技术选型
@@ -181,7 +181,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 1. 基于 design 的决策，产出精确的技术规范
 2. 包含数据模型、接口定义、变更清单
 
-**产出物**：`workspace/{YYYYMMDD}__{feature-name}/tech-spec/tech-spec.md`
+**产出物**：`artifacts/{YYYYMMDD}__{feature-name}/tech-spec/tech-spec.md`
 
 ```markdown
 # {任务名称} 技术规范
@@ -219,7 +219,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 
 **产出物**：
 - `target/` 下的实际代码变更
-- `workspace/{YYYYMMDD}__{feature-name}/implementation/decisions.md`（如有额外决策）
+- `artifacts/{YYYYMMDD}__{feature-name}/implementation/decisions.md`（如有额外决策）
 
 **检查点**：向用户展示代码变更摘要，确认实现完成，然后询问进入下一阶段。
 
@@ -234,7 +234,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 2. 优先读取 `.agents/recipes.json` 选择验证命令；不存在时运行 `/an-recipes` 探测
 3. 记录测试结果
 
-**产出物**：`workspace/{YYYYMMDD}__{feature-name}/testing/testing-report.md`
+**产出物**：`artifacts/{YYYYMMDD}__{feature-name}/testing/testing-report.md`
 
 ```markdown
 # {任务名称} 测试报告
@@ -262,10 +262,10 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 1. L2/L3 在 testing 后运行：
 
    ```bash
-   node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+   node .agents/skills/an-eval/scripts/evaluate-task.mjs artifacts/{YYYYMMDD}__{feature-name}
    ```
 
-2. 将输出保存为 `workspace/{YYYYMMDD}__{feature-name}/testing/eval-report.md`
+2. 将输出保存为 `artifacts/{YYYYMMDD}__{feature-name}/testing/eval-report.md`
 3. 如果结论为 `BLOCKED`，不要归档任务；先补验收标准、测试证据或风险处理
 
 ---
@@ -276,10 +276,10 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 
 **行为**：
 1. 更新 `background/features.md` 中的功能状态
-2. 更新项目根 `AGENTS.md` 的活跃 Workspace 表
+2. 更新项目根 `AGENTS.md` 的活跃 Artifacts 表
 3. 产出部署说明（如有必要）
 
-**产出物**：`workspace/{YYYYMMDD}__{feature-name}/deployment/release-notes.md`
+**产出物**：`artifacts/{YYYYMMDD}__{feature-name}/deployment/release-notes.md`
 
 ```markdown
 # {任务名称} 发布说明
@@ -304,14 +304,14 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 
 ---
 
-## 工作区索引
+## Artifact 索引
 
-每创建一个新工作区，同步更新项目根 `AGENTS.md` 的活跃 Workspace 表：
+每创建一个新产出目录，同步更新项目根 `AGENTS.md` 的活跃 Artifacts 表：
 
 ```markdown
-| Workspace | 描述 | 状态 |
-|-----------|------|------|
-| workspace/{feature-name} | {简述} | 🚧 进行中 |
+| Artifact | 描述 | 状态 |
+|----------|------|------|
+| artifacts/{feature-name} | {简述} | 🚧 进行中 |
 ```
 
 完成后更新为 ✅。
@@ -324,5 +324,5 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 |------|------|
 | 用户中途想修改之前阶段产出 | 回到对应阶段，修改后重新确认，评估对后续阶段的影响 |
 | 用户想跳过某个阶段 | 允许跳过，但告知可能的风险 |
-| 用户想暂停 | 保存当前进度到工作区 AGENTS.md，下次可恢复 |
+| 用户想暂停 | 保存当前进度到产出目录 AGENTS.md，下次可恢复 |
 | 代码实现遇到 tech-spec 未覆盖的问题 | 记录决策，必要时回退更新 tech-spec |

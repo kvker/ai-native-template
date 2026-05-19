@@ -41,7 +41,7 @@ AI 应根据风险和不确定性选择最轻但足够安全的流程。目标�
 
 ## 文档策略
 
-- L0 不强制创建 workspace。
-- L1 可以创建轻量 workspace；若任务很小，也可只在最终总结中记录。
-- L2/L3 必须创建 workspace 并更新根 `AGENTS.md` 活跃 Workspace 表。
+- L0 不强制创建 artifacts。
+- L1 可以创建轻量 artifacts；若任务很小，也可只在最终总结中记录。
+- L2/L3 必须创建 artifacts 产出目录并更新根 `AGENTS.md` 活跃 Artifacts 表。
 - 完成 L2/L3 后应运行 `/an-eval`，将报告保存到 `testing/eval-report.md`。

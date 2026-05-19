@@ -2,13 +2,13 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const workspace = path.resolve(process.argv[2] || ".");
-if (!fs.existsSync(workspace)) {
-  console.error(`Workspace not found: ${workspace}`);
+const artifacts = path.resolve(process.argv[2] || ".");
+if (!fs.existsSync(artifacts)) {
+  console.error(`Artifacts not found: ${artifacts}`);
   process.exit(2);
 }
 
-const report = evaluate(workspace);
+const report = evaluate(artifacts);
 process.stdout.write(toMarkdown(report));
 
 function evaluate(dir) {
@@ -32,7 +32,7 @@ function evaluate(dir) {
   const gate = blockers.length ? "BLOCKED" : total >= 80 ? "PASS" : total >= 60 ? "REVIEW" : "BLOCKED";
 
   return {
-    workspace: path.relative(process.cwd(), dir) || ".",
+    artifacts: path.relative(process.cwd(), dir) || ".",
     flow,
     gate,
     total,
@@ -138,7 +138,7 @@ function toMarkdown(report) {
   const lines = [
     "# AI Native Task Eval",
     "",
-    `- Workspace: \`${report.workspace}\``,
+    `- Artifacts: \`${report.artifacts}\``,
     `- Flow: \`${report.flow}\``,
     `- Gate: **${report.gate}**`,
     `- Score: **${report.total}/100**`,

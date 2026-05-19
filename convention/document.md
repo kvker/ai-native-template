@@ -1,6 +1,6 @@
 ---
 paths:
-  - "workspace/**/*.md"
+  - "artifacts/**/*.md"
   - "background/**/*.md"
   - "convention/**/*.md"
   - "AGENTS.md"

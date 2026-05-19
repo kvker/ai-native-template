@@ -1,6 +1,6 @@
 ---
 name: an-eval
-description: 按验收标准、实现可追踪性、测试证据、风险关闭和发布准备度评价 AI Native 任务完成质量。实现和测试后、关闭工作区前，或用户询问任务是否真的完成时使用。
+description: 按验收标准、实现可追踪性、测试证据、风险关闭和发布准备度评价 AI Native 任务完成质量。实现和测试后、关闭任务产出前，或用户询问任务是否真的完成时使用。
 ---
 
 # AI Native 任务质量评价
@@ -10,13 +10,13 @@ description: 按验收标准、实现可追踪性、测试证据、风险关闭�
 ## 快速使用
 
 ```bash
-node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+node .agents/skills/an-eval/scripts/evaluate-task.mjs artifacts/{YYYYMMDD}__{feature-name}
 ```
 
 输出 Markdown 质量报告，可保存到：
 
 ```text
-workspace/{feature}/testing/eval-report.md
+artifacts/{feature}/testing/eval-report.md
 ```
 
 ## 评价维度

@@ -4,14 +4,14 @@ import path from "node:path";
 
 const args = parseArgs(process.argv.slice(2));
 const root = path.resolve(args.root || "target");
-const workspaceRoot = path.resolve(args.workspace || "workspace");
+const artifactsRoot = path.resolve(args.artifacts || "artifacts");
 const format = args.format || (args.write ? "json" : "markdown");
 
 const summary = {
   schemaVersion: 1,
   root: rel(root),
   projects: scanProjects(root),
-  workspaceTesting: scanWorkspaceTesting(workspaceRoot),
+  artifactsTesting: scanArtifactsTesting(artifactsRoot),
 };
 
 const output = format === "json" ? JSON.stringify(summary, null, 2) : toMarkdown(summary);
@@ -153,7 +153,7 @@ function detectTests(files) {
   };
 }
 
-function scanWorkspaceTesting(dir) {
+function scanArtifactsTesting(dir) {
   if (!fs.existsSync(dir)) return [];
   const reports = listFiles(dir, 500)
     .filter((file) => /testing-report\.md$/.test(file))
@@ -241,9 +241,9 @@ function toMarkdown(summary) {
       lines.push("");
     }
   }
-  if (summary.workspaceTesting.length) {
-    lines.push("## Workspace Testing Reports", "", "| File | Command Mentions | Failure Signals |", "|------|------------------|-----------------|");
-    for (const report of summary.workspaceTesting) lines.push(`| \`${report.file}\` | ${report.commandMentions} | ${report.failureSignals} |`);
+  if (summary.artifactsTesting.length) {
+    lines.push("## Artifacts Testing Reports", "", "| File | Command Mentions | Failure Signals |", "|------|------------------|-----------------|");
+    for (const report of summary.artifactsTesting) lines.push(`| \`${report.file}\` | ${report.commandMentions} | ${report.failureSignals} |`);
     lines.push("");
   }
   return lines.join("\n");

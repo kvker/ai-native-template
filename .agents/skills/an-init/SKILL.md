@@ -1,6 +1,6 @@
 ---
 name: an-init
-description: 将现有工程转换为 AI Native 项目结构。当用户想要：1) 将现有项目转换为 AI Native 格式 2) 为已有代码生成 background/convention/workspace 文档 3) 执行 /an-init 命令 4) 让 AI 理解并接管现有项目 时触发此技能。**始终使用中文与用户沟通。**
+description: 将现有工程转换为 AI Native 项目结构。当用户想要：1) 将现有项目转换为 AI Native 格式 2) 为已有代码生成 background/convention/artifacts 文档 3) 执行 /an-init 命令 4) 让 AI 理解并接管现有项目 时触发此技能。**始终使用中文与用户沟通。**
 ---
 
 # AI Native 项目初始化
@@ -76,7 +76,7 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write 
 
 ```text
 在当前仓库中运行：
-node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts artifacts --format markdown
 
 返回：
 1. 依赖包、脚本、依赖摘要
@@ -324,16 +324,16 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
 
 由 `/an-recipes` 或命令清单子代理探测生成，记录验证、构建、生成和开发命令清单。
 
-#### workspace/AGENTS.md
+#### artifacts/AGENTS.md
 
 ```markdown
-# workspace 目录说明
+# artifacts 目录说明
 
-`workspace/` 存放活跃任务工作区。每个任务使用独立目录，命名为 `YYYYMMDD__feature-name`。
+`artifacts/` 存放任务产出。每个任务使用独立目录，命名为 `YYYYMMDD__feature-name`。
 
 ## 约定结构
 
-workspace/{YYYYMMDD}__{feature-name}/
+artifacts/{YYYYMMDD}__{feature-name}/
 ├── AGENTS.md
 ├── raw-input/
 ├── requirements/
@@ -345,14 +345,14 @@ workspace/{YYYYMMDD}__{feature-name}/
 
 ## AI 行为
 
-- 新任务优先创建独立工作区，并在根 `AGENTS.md` 的活跃 Workspace 表中登记。
-- 工作区只存过程文档、决策、报告和临时分析，不存放最终产品代码。
-- 每个工作区可包含自己的 `AGENTS.md` 作为任务索引。
-- 任务完成后，可使用 `/an-archive` 移动到 `workspace/archive/`。
-- 恢复历史任务时先匹配目录名，再读取对应工作区内容，避免无谓加载大量文档。
+- 新任务优先创建独立产出目录，并在根 `AGENTS.md` 的活跃 Artifacts 表中登记。
+- 产出目录只存过程文档、决策、报告和临时分析，不存放最终产品代码。
+- 每个产出目录可包含自己的 `AGENTS.md` 作为任务索引。
+- 任务完成后，可使用 `/an-archive` 移动到 `artifacts/archive/`。
+- 恢复历史任务时先匹配目录名，再读取对应产出内容，避免无谓加载大量文档。
 ```
 
-初始化完成后不保留 `background/README.md` 或 `workspace/README.md`。目录级说明统一放入对应的 `AGENTS.md`，避免 README 与 Codex 双入口漂移。
+初始化完成后不保留 `background/README.md` 或 `artifacts/README.md`。目录级说明统一放入对应的 `AGENTS.md`，避免 README 与 Codex 双入口漂移。
 
 ---
 
@@ -385,10 +385,10 @@ workspace/{YYYYMMDD}__{feature-name}/
 - convention/code-style.md（paths 包含 .ts 和 .js 文件）
 - .agents/recipes.json（可执行命令清单）
 - background/AGENTS.md
-- workspace/AGENTS.md
+- artifacts/AGENTS.md
 
 下一步：
-1. 在 workspace/ 中创建你的第一个任务工作区
+1. 在 artifacts/ 中创建你的第一个任务产出目录
 2. 参考 background/ 了解项目背景
 3. 规范已写入 convention/，编辑代码和目录结构时自动生效
 ```
@@ -400,7 +400,7 @@ workspace/{YYYYMMDD}__{feature-name}/
 删除模板专用文件：
 
 1. 删除 `./README.md`（模板说明文档，仅供人类阅读）
-2. 删除 `background/README.md` 和 `workspace/README.md`（如存在），目录级说明统一使用 `AGENTS.md`
+2. 删除 `background/README.md` 和 `artifacts/README.md`（如存在），目录级说明统一使用 `AGENTS.md`
 3. 删除 `target/.gitkeep`（初始化占位文件，如存在）
 
 如果未使用命令清单子代理，生成文档后运行命令探测：
@@ -412,7 +412,7 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write 
 如果未使用背景扫描子代理，需要本地运行背景扫描并将结果纳入文档：
 
 ```bash
-node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts artifacts --format markdown
 ```
 
 ---

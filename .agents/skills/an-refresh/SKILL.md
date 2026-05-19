@@ -5,7 +5,7 @@ description: 根据实际代码和结果反向更新 background 背景知识库�
 
 # 刷新背景知识库
 
-根据 `target/` 中的实际代码和 `workspace/` 中的已完成工作，反向更新 `background/` 文档。
+根据 `target/` 中的实际代码和 `artifacts/` 中的已完成工作，反向更新 `background/` 文档。
 
 **核心理念**：先有结果，后有文档。当代码先行落地，背景知识需要跟上。
 
@@ -39,13 +39,13 @@ description: 根据实际代码和结果反向更新 background 背景知识库�
 优先运行结构化扫描脚本：
 
 ```bash
-node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --format markdown
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts artifacts --format markdown
 ```
 
 需要给后续处理保存 JSON 时：
 
 ```bash
-node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace workspace --write workspace/background-scan.json
+node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts artifacts --write artifacts/background-scan.json
 ```
 
 1. 读取 `background/` 下所有文档，了解当前记录的状态
@@ -54,7 +54,7 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --workspace
    - 目录结构变化（新增/删除的模块）
    - 新增的 API 接口、数据模型
    - 配置变更
-3. 扫描已完成的 `workspace/` 任务，提取隐含的背景信息：
+3. 扫描已完成的 `artifacts/` 任务，提取隐含的背景信息：
    - 已上线的功能（更新 features 状态）
    - 已做出的架构决策
    - 已解决的领域问题

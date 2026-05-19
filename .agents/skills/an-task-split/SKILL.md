@@ -16,7 +16,7 @@ description: 将大任务拆分为多个子任务，每个子任务的 requireme
 用户可通过以下方式提供 raw-input：
 
 - 直接输入文字描述
-- 引用文件路径（如 `workspace/xxx/raw-input/task.md`）
+- 引用文件路径（如 `artifacts/xxx/raw-input/task.md`）
 - 引用外部链接（issue、文档等）
 
 ---
@@ -34,14 +34,14 @@ raw-input → split-plan
 **目标**：保存用户的原始大任务描述，不做加工。
 
 **行为**：
-1. 创建工作区目录 `workspace/{YYYYMMDD}__{feature-name}/`
-2. 将原始输入保存到 `workspace/{YYYYMMDD}__{feature-name}/raw-input/task.md`
+1. 创建任务产出目录 `artifacts/{YYYYMMDD}__{feature-name}/`
+2. 将原始输入保存到 `artifacts/{YYYYMMDD}__{feature-name}/raw-input/task.md`
 3. 如果引用了文件，读取并保存副本
 
 **产出物**：
 
 ```text
-workspace/{YYYYMMDD}__{feature-name}/raw-input/
+artifacts/{YYYYMMDD}__{feature-name}/raw-input/
 └── task.md              # 原始输入内容
 ```
 
@@ -63,7 +63,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 4. 明确子任务之间的依赖关系和执行顺序
 5. 产出拆分方案文档
 
-**产出物**：`workspace/{YYYYMMDD}__{feature-name}/split-plan.md`
+**产出物**：`artifacts/{YYYYMMDD}__{feature-name}/split-plan.md`
 
 ```markdown
 # {任务名称} 拆分方案
@@ -91,7 +91,7 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 - **核心场景**: {关键业务场景}
 - **关键验收标准**: {最核心的 AC 要点}
 - **预估行数**: ~N行
-- **工作区**: workspace/{YYYYMMDD}__{sub-1}/
+- **Artifact**: artifacts/{YYYYMMDD}__{sub-1}/
 
 ### sub-2: {名称}
 ...
@@ -101,22 +101,22 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 ```
 
 **检查点**：向用户展示拆分方案，等待用户审核确认。用户可能：
-- 确认拆分方案 → 为每个子任务创建独立工作区目录，更新 AGENTS.md 索引
+- 确认拆分方案 → 为每个子任务创建独立产出目录，更新 AGENTS.md 索引
 - 要求调整拆分 → 修改 split-plan 后重新确认
-- 选择其中部分子任务先推进 → 仅创建选定子任务的工作区
+- 选择其中部分子任务先推进 → 仅创建选定子任务的产出目录
 
 ---
 
-## 工作区索引
+## Artifact 索引
 
-确认拆分方案后，更新项目根 `AGENTS.md` 的活跃 Workspace 表：
+确认拆分方案后，更新项目根 `AGENTS.md` 的活跃 Artifacts 表：
 
 ```markdown
-| Workspace | 描述 | 状态 |
-|-----------|------|------|
-| workspace/{YYYYMMDD}__{feature-name} | {总任务拆分方案} | ✅ 完成 |
-| workspace/{YYYYMMDD}__{sub-1} | {子任务描述} | 🚧 待启动 |
-| workspace/{YYYYMMDD}__{sub-2} | {子任务描述} | 🚧 待启动 |
+| Artifact | 描述 | 状态 |
+|----------|------|------|
+| artifacts/{YYYYMMDD}__{feature-name} | {总任务拆分方案} | ✅ 完成 |
+| artifacts/{YYYYMMDD}__{sub-1} | {子任务描述} | 🚧 待启动 |
+| artifacts/{YYYYMMDD}__{sub-2} | {子任务描述} | 🚧 待启动 |
 ```
 
 ---
@@ -132,5 +132,5 @@ workspace/{YYYYMMDD}__{feature-name}/raw-input/
 | 情况 | 处理 |
 |------|------|
 | 用户想修改拆分方案 | 调整 split-plan.md 后重新确认 |
-| 用户只想推进部分子任务 | 仅创建选定子任务的工作区 |
+| 用户只想推进部分子任务 | 仅创建选定子任务的产出目录 |
 | 原始任务本身不大（预估 requirements < 200 行） | 告知用户无需拆分，建议直接使用 an-task |

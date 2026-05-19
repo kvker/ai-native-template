@@ -58,7 +58,7 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write 
 L2/L3 任务完成测试后运行：
 
 ```bash
-node .agents/skills/an-eval/scripts/evaluate-task.mjs workspace/{YYYYMMDD}__{feature-name}
+node .agents/skills/an-eval/scripts/evaluate-task.mjs artifacts/{YYYYMMDD}__{feature-name}
 ```
 
-将输出保存为 `workspace/{feature}/testing/eval-report.md`。`BLOCKED` 表示不应归档，除非用户明确接受剩余风险。
+将输出保存为 `artifacts/{feature}/testing/eval-report.md`。`BLOCKED` 表示不应归档，除非用户明确接受剩余风险。
