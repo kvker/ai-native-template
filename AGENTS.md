@@ -17,11 +17,11 @@
 | [background](background/) | 静态背景知识 | 只读，了解领域知识 |
 | [convention](convention/) | 项目约定规范 | 开始任务前按需读取，作为行为约束 |
 | [artifacts](artifacts/) | 任务产出目录 | 频繁读写，跟踪任务产出 |
-| [target](target/) | 实际代码目录 | 实现阶段才访问，每个子目录为一个独立工程 |
+| [projects](projects/) | 实际工程项目 | 实现阶段才访问，每个子目录为一个独立工程 |
 
 ## 约定
 
-索引文件只存放路由，不存放内容：`[name](path/to/target)`
+索引文件只存放路由，不存放内容：`[name](path/to/file)`
 
 ## AI 行为约束
 

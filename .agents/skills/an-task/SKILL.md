@@ -148,7 +148,7 @@ artifacts/{YYYYMMDD}__{feature-name}/raw-input/
 
 **行为**：
 1. 基于 requirements，调研可行方案
-2. 如需了解现有代码，读取 `target/` 下相关文件
+2. 如需了解现有代码，读取 `projects/` 下相关文件
 3. 产出技术选型讨论文档
 
 **产出物**：`artifacts/{YYYYMMDD}__{feature-name}/design/design.md`
@@ -218,7 +218,7 @@ artifacts/{YYYYMMDD}__{feature-name}/raw-input/
 3. 如遇 tech-spec 未覆盖的问题，记录决策到 implementation 记录中
 
 **产出物**：
-- `target/` 下的实际代码变更
+- `projects/` 下的实际代码变更
 - `artifacts/{YYYYMMDD}__{feature-name}/implementation/decisions.md`（如有额外决策）
 
 **检查点**：向用户展示代码变更摘要，确认实现完成，然后询问进入下一阶段。

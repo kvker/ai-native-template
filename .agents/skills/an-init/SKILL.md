@@ -7,26 +7,26 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
 
 将现有工程转换为 AI Native 项目结构。
 
-支持将一个或多个项目复制到 `target/` 目录，每个子目录视为一个独立工程。
+支持将一个或多个项目复制到 `projects/` 目录，每个子目录视为一个独立工程。
 
 ## 前置检查
 
 执行前检查：
 
-1. **检查 `target/` 目录内容**
+1. **检查 `projects/` 目录内容**
    - 如果有代码：继续执行
    - 如果为空（仅有 `.gitkeep`）：
      ```
-     ⚠️ target/ 目录为空
+     ⚠️ projects/ 目录为空
 
-     请将你的现有工程代码复制到 target/ 目录：
+     请将你的现有工程代码复制到 projects/ 目录：
 
      单项目：
-     cp -r /path/to/your-project ./target/my-project
+     cp -r /path/to/your-project ./projects/my-project
 
      多项目（前后端分离等）：
-     cp -r /path/to/frontend ./target/frontend
-     cp -r /path/to/backend ./target/backend
+     cp -r /path/to/frontend ./projects/frontend
+     cp -r /path/to/backend ./projects/backend
 
      完成后重新执行 /an-init
      ```
@@ -50,7 +50,7 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
 
 ### 阶段一：代码分析（静默执行）
 
-扫描 `target/` 目录下的每个子目录，提取客观信息：
+扫描 `projects/` 目录下的每个子目录，提取客观信息：
 
 **子代理并行策略**：
 
@@ -64,7 +64,7 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
 
 ```text
 在当前仓库中运行：
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
 
 返回：
 1. 识别到的工程和命令数量
@@ -76,7 +76,7 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write 
 
 ```text
 在当前仓库中运行：
-node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts artifacts --format markdown
+node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
 
 返回：
 1. 依赖包、脚本、依赖摘要
@@ -87,14 +87,14 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 ```
 
 **项目列表识别**：
-- 扫描 `target/` 下的所有一级子目录
+- 扫描 `projects/` 下的所有一级子目录
 - 每个子目录视为一个独立工程
 
 **技术栈识别**（对每个工程分别执行以下检查）：
 
 ```
 对每个工程子目录：
-1. 进入 target/{工程名}/
+1. 进入 projects/{工程名}/
 2. 检查是否存在 package.json、pom.xml 等特征文件
 3. 根据文件内容判断技术栈
 ```
@@ -133,9 +133,9 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 分析完成后，一次性向用户提出所有问题：
 
 ```
-我已分析 target/ 目录，识别到以下工程：
+我已分析 projects/ 目录，识别到以下工程：
 
-{遍历 target/ 下的子目录，每个输出一行}
+{遍历 projects/ 下的子目录，每个输出一行}
 - {工程名}：{项目类型} - {主要依赖}
 
 需要补充一些信息：
@@ -181,7 +181,7 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 
 | 工程 | 类型 | 描述 |
 |------|------|------|
-| {target下的子目录名} | {项目类型} | {简要说明} |
+| {projects下的子目录名} | {项目类型} | {简要说明} |
 
 ### 必读文档
 
@@ -258,7 +258,7 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 
 {按工程分节}
 
-{遍历 target/ 下的子目录，为每个工程生成一节}
+{遍历 projects/ 下的子目录，为每个工程生成一节}
 
 ## {工程名}
 
@@ -286,24 +286,24 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 - 除 `/an-init`、`/an-refresh` 或用户明确要求外，不主动修改本目录。
 - 更新时保持增量，不重写人工补充内容。
 - 从代码反推的信息要标注来源；无法确认的信息标记为“待确认”。
-- 背景文档与 `target/` 代码冲突时，先以代码事实为准，并在更新摘要中说明冲突。
+- 背景文档与 `projects/` 代码冲突时，先以代码事实为准，并在更新摘要中说明冲突。
 ```
 
 # 目录结构规范
 
-## target/ 目录结构
+## projects/ 目录结构
 
-{扫描 target/ 生成的目录树}
+{扫描 projects/ 生成的目录树}
 
 ## 工程说明
 
 | 目录 | 工程 | 职责 |
 |------|------|------|
-| target/{工程A} | {工程A名称} | {说明} |
-| target/{工程B} | {工程B名称} | {说明} |
+| projects/{工程A} | {工程A名称} | {说明} |
+| projects/{工程B} | {工程B名称} | {说明} |
 ```
 
-> 多工程场景：`paths` 保持 `["target/**"]` 即可覆盖所有工程。
+> 多工程场景：`paths` 保持 `["projects/**"]` 即可覆盖所有工程。
 
 
 # 代码风格规范
@@ -318,7 +318,7 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 ```
 
 > 多工程场景：保留所有工程使用的文件后缀。
-> 示例：`paths: ["target/**/*.{ts,tsx,js,jsx}", "target/**/*.java"]`
+> 示例：`paths: ["projects/**/*.{ts,tsx,js,jsx}", "projects/**/*.java"]`
 
 #### .agents/recipes.json
 
@@ -401,18 +401,18 @@ artifacts/{YYYYMMDD}__{feature-name}/
 
 1. 删除 `./README.md`（模板说明文档，仅供人类阅读）
 2. 删除 `background/README.md` 和 `artifacts/README.md`（如存在），目录级说明统一使用 `AGENTS.md`
-3. 删除 `target/.gitkeep`（初始化占位文件，如存在）
+3. 删除 `projects/.gitkeep`（初始化占位文件，如存在）
 
 如果未使用命令清单子代理，生成文档后运行命令探测：
 
 ```bash
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
 ```
 
 如果未使用背景扫描子代理，需要本地运行背景扫描并将结果纳入文档：
 
 ```bash
-node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts artifacts --format markdown
+node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
 ```
 
 ---
@@ -421,7 +421,7 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 
 | 情况 | 处理 |
 |------|------|
-| target/ 为空（仅有 .gitkeep） | 停止并提示用户复制代码到 target/ |
-| target/ 下无子目录 | 提示用户创建工程子目录 |
+| projects/ 为空（仅有 .gitkeep） | 停止并提示用户复制代码到 projects/ |
+| projects/ 下无子目录 | 提示用户创建工程子目录 |
 | 无法识别技术栈 | 跳过自动识别，询问用户 |
 | 用户取消 | 不生成任何文件 |

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const args = parseArgs(process.argv.slice(2));
-const root = path.resolve(args.root || "target");
+const root = path.resolve(args.root || "projects");
 const artifactsRoot = path.resolve(args.artifacts || "artifacts");
 const format = args.format || (args.write ? "json" : "markdown");
 
@@ -223,7 +223,7 @@ function rel(file) {
 
 function toMarkdown(summary) {
   const lines = ["# Background Scan", ""];
-  if (!summary.projects.length) lines.push("No target projects detected.", "");
+  if (!summary.projects.length) lines.push("No projects detected.", "");
   for (const project of summary.projects) {
     lines.push(`## ${project.name}`, "", `- Path: \`${project.path}\``);
     if (project.package) {

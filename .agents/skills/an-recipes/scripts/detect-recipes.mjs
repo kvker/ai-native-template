@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const args = parseArgs(process.argv.slice(2));
-const root = path.resolve(args.root || "target");
+const root = path.resolve(args.root || "projects");
 const format = args.format || (args.write ? "json" : "markdown");
 
 const projects = scanProjects(root);
@@ -195,7 +195,7 @@ function rel(file) {
 function toMarkdown(data) {
   const lines = ["# Executable Recipes", ""];
   if (!data.projects.length) {
-    lines.push("No target projects detected.");
+    lines.push("No projects detected.");
     return lines.join("\n");
   }
   for (const project of data.projects) {

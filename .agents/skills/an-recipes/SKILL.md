@@ -1,6 +1,6 @@
 ---
 name: an-recipes
-description: 探测、生成和运行 AI Native 可执行命令清单，包括验证、构建、代码检查、类型检查、代码生成和本地开发命令。用户询问可执行规则、项目命令、验证命令，或 /an-init 后需要让 target 工程可被 AI 直接运行时使用。
+description: 探测、生成和运行 AI Native 可执行命令清单，包括验证、构建、代码检查、类型检查、代码生成和本地开发命令。用户询问可执行规则、项目命令、验证命令，或 /an-init 后需要让 projects 工程可被 AI 直接运行时使用。
 ---
 
 # AI Native 可执行命令清单
@@ -17,13 +17,13 @@ description: 探测、生成和运行 AI Native 可执行命令清单，包括�
 ## 快速探测
 
 ```bash
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --format markdown
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --format markdown
 ```
 
 写入结构化命令清单：
 
 ```bash
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
 ```
 
 ## 命令选择原则

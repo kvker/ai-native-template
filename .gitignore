@@ -1,4 +1,5 @@
 .env*
-target/**/*
+projects/**/*
+!projects/.gitkeep
 .DS_Store
 **/*/.DS_Store

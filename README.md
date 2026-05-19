@@ -13,19 +13,19 @@
 ```bash
 # 1. 下载这个模板
 
-# 2. 将你的项目代码复制到 target 目录
-# 单项目（复制到 target/ 下，会保留原始文件夹名）：
-cp -r /path/to/your-project ./target/
+# 2. 将你的项目代码复制到 projects 目录
+# 单项目（复制到 projects/ 下，会保留原始文件夹名）：
+cp -r /path/to/your-project ./projects/
 
 # 多项目（前后端分离等）：
-cp -r /path/to/frontend ./target/
-cp -r /path/to/backend ./target/
+cp -r /path/to/frontend ./projects/
+cp -r /path/to/backend ./projects/
 
 # 3. 执行初始化命令
 /an-init
 ```
 
-AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `convention/` 规范，并通过 `AGENTS.md` 路由给支持 AGENTS 的工具读取。
+AI 会自动分析 `projects/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `convention/` 规范，并通过 `AGENTS.md` 路由给支持 AGENTS 的工具读取。
 初始化时会主动询问是否使用子代理并行处理“可执行命令清单”和“背景扫描”。未启用子代理时，会在主流程中顺序执行同样脚本。
 
 ### 方式二：从零开始
@@ -38,10 +38,10 @@ AI 会自动分析 `target/` 下的每个子目录（每个视为一个独立工
 
 **流程**：
 ```
-/an-task 需求描述 → artifacts/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → target/
+/an-task 需求描述 → artifacts/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → projects/
 ```
 
-AI 会在 `artifacts/` 中创建任务产出目录，按阶段生成文档，最终在 `target/` 中生成代码。
+AI 会在 `artifacts/` 中创建任务产出目录，按阶段生成文档，最终在 `projects/` 中生成代码。
 
 ## 目录结构
 
@@ -56,7 +56,7 @@ ai-native-template/
 │   └── document.md     # 文档编写规范
 ├── background/         # 背景知识（空，等待填充）
 ├── artifacts/          # 任务产出目录（空）
-└── target/             # 实际代码（空）
+└── projects/          # 实际工程项目（空）
 ```
 
 ### 初始化后（执行 /an-init）
@@ -77,7 +77,7 @@ your-project/
 │       └── stack.md
 ├── artifacts/          # 任务产出目录
 │   └── AGENTS.md       # 产出目录说明
-└── target/             # 实际代码（每个子目录为一个工程）
+└── projects/          # 实际工程项目（每个子目录为一个工程）
     ├── frontend/       # 前端工程（示例）
     └── backend/        # 后端工程（示例）
 ```
@@ -86,7 +86,7 @@ your-project/
 
 | 命令 | 用途 |
 |------|------|
-| `/an-init` | 迁移现有项目，分析 target/ 下各工程的代码生成文档 |
+| `/an-init` | 迁移现有项目，分析 projects/ 下各工程的代码生成文档 |
 | `/an-task` | 标准化流程实现 feature |
 | `/an-task-split` | 将大任务拆分为多个子任务 |
 | `/an-recipes` | 探测并生成可执行命令清单 |
@@ -112,7 +112,7 @@ raw-input → requirements → design → tech-spec → implementation → testi
 初始化后可生成 `.agents/recipes.json`：
 
 ```bash
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
 ```
 
 任务实现后，AI 优先从该文件选择最小验证命令，而不是临时猜测 `npm test` 或 `pnpm build`。
@@ -136,4 +136,4 @@ node .agents/skills/an-eval/scripts/evaluate-task.mjs artifacts/{YYYYMMDD}__{fea
 ## 相关入口
 
 - [AGENTS 入口文件](AGENTS.md) - AI 的入口文件
-- [工程入口](target/) - 实际代码目录
+- [工程入口](projects/) - 实际工程项目

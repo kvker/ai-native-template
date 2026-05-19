@@ -5,7 +5,7 @@ description: 根据实际代码和结果反向更新 background 背景知识库�
 
 # 刷新背景知识库
 
-根据 `target/` 中的实际代码和 `artifacts/` 中的已完成工作，反向更新 `background/` 文档。
+根据 `projects/` 中的实际代码和 `artifacts/` 中的已完成工作，反向更新 `background/` 文档。
 
 **核心理念**：先有结果，后有文档。当代码先行落地，背景知识需要跟上。
 
@@ -39,17 +39,17 @@ description: 根据实际代码和结果反向更新 background 背景知识库�
 优先运行结构化扫描脚本：
 
 ```bash
-node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts artifacts --format markdown
+node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
 ```
 
 需要给后续处理保存 JSON 时：
 
 ```bash
-node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts artifacts --write artifacts/background-scan.json
+node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --write artifacts/background-scan.json
 ```
 
 1. 读取 `background/` 下所有文档，了解当前记录的状态
-2. 扫描 `target/` 目录，提取实际信息：
+2. 扫描 `projects/` 目录，提取实际信息：
    - 技术栈版本（package.json / go.mod / pom.xml 等）
    - 目录结构变化（新增/删除的模块）
    - 新增的 API 接口、数据模型
@@ -82,7 +82,7 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 发现的差异：
 1. [stack.md] React 版本记录为 18.x，实际为 19.x
 2. [overview.md] 缺少已上线的「用户通知」功能模块
-3. [structure.md] 新增了 target/apps/notification/ 目录未记录
+3. [structure.md] 新增了 projects/apps/notification/ 目录未记录
 
 需要新增的文档：
 - background/domains.md（当前不存在，但代码中已出现明显的领域模型）
@@ -189,6 +189,6 @@ node .agents/skills/an-refresh/scripts/scan-target.mjs --root target --artifacts
 | 情况 | 处理 |
 |------|------|
 | background/ 为空 | 提示用户先执行 `/an-init` |
-| target/ 代码无法解析 | 跳过自动分析，提示用户手动提供信息 |
+| projects/ 代码无法解析 | 跳过自动分析，提示用户手动提供信息 |
 | 文档与代码冲突 | 以代码为准，但标记差异让用户确认 |
 | 用户只想部分更新 | 按指定范围执行，跳过其他 |

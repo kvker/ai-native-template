@@ -48,7 +48,7 @@ raw-input → requirements → design → tech-spec → implementation → testi
 项目命令优先从 `.agents/recipes.json` 读取；不存在或过期时运行：
 
 ```bash
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root target --write .agents/recipes.json
+node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
 ```
 
 实现后选择最小但有意义的命令进行验证。跨工程改动需要分别选择受影响工程的命令。
