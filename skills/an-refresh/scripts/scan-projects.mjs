@@ -14,6 +14,11 @@ const summary = {
   artifactsTesting: scanArtifactsTesting(artifactsRoot),
 };
 
+if (!summary.projects.length) {
+  console.error(`No project directories found under ${rel(root)}. Copy existing project code into projects/ before running this command.`);
+  process.exit(1);
+}
+
 const output = format === "json" ? JSON.stringify(summary, null, 2) : toMarkdown(summary);
 if (args.write) {
   const out = path.resolve(args.write);
@@ -223,7 +228,6 @@ function rel(file) {
 
 function toMarkdown(summary) {
   const lines = ["# Background Scan", ""];
-  if (!summary.projects.length) lines.push("No projects detected.", "");
   for (const project of summary.projects) {
     lines.push(`## ${project.name}`, "", `- Path: \`${project.path}\``);
     if (project.package) {

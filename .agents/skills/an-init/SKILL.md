@@ -64,7 +64,7 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
 
 ```text
 在当前仓库中运行：
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
+node skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
 
 返回：
 1. 识别到的工程和命令数量
@@ -76,7 +76,7 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --writ
 
 ```text
 在当前仓库中运行：
-node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
+node skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
 
 返回：
 1. 依赖、脚本和工具链摘要
@@ -422,25 +422,39 @@ artifacts/{YYYYMMDD}__{feature-name}/
 
 ---
 
-### 阶段四：清理
+### 阶段四：安装项目技能与清理
+
+如果未使用命令清单子代理，生成文档后运行命令探测：
+
+```bash
+node skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
+```
+
+如果未使用背景扫描子代理，需要本地运行背景扫描并将结果纳入文档：
+
+```bash
+node skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
+```
+
+初始化完成后，将项目运行期技能安装到激活目录：
+
+```bash
+mkdir -p .agents/skills
+mv skills/* .agents/skills/
+rmdir skills
+```
+
+安装规则：
+
+- `.agents/skills/an-init/` 在模板阶段保留，用于自动激活初始化能力。
+- `skills/` 暂存目录中的其他技能不在模板阶段激活；只在初始化完成后移动到 `.agents/skills/`。
+- 移动完成后删除空的 `skills/` 目录，避免项目中保留模板暂存结构。
 
 删除模板专用文件：
 
 1. 删除 `./README.md`（模板说明文档，仅供人类阅读）
 2. 删除 `background/README.md` 和 `artifacts/README.md`（如存在），目录级说明统一使用 `AGENTS.md`
 3. 删除 `projects/.gitkeep`（初始化占位文件，如存在）
-
-如果未使用命令清单子代理，生成文档后运行命令探测：
-
-```bash
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
-```
-
-如果未使用背景扫描子代理，需要本地运行背景扫描并将结果纳入文档：
-
-```bash
-node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
-```
 
 ---
 

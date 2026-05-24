@@ -18,6 +18,8 @@
 | [conventions](conventions/) | 项目约定规范、对话长期规则与优化记录 | 开始任务前按需读取；对话过程中自动感知并按需写入 |
 | [artifacts](artifacts/) | 任务产出目录 | 频繁读写，跟踪任务产出 |
 | [projects](projects/) | 实际工程项目 | 实现阶段才访问，每个子目录为一个独立工程 |
+| [skills](skills/) | 初始化后安装的项目技能暂存目录 | 模板阶段不作为激活技能读取；`/an-init` 完成后移动到 `.agents/skills/` 并删除 |
+| [.agents/skills/an-init](.agents/skills/an-init/) | 模板初始化技能 | 模板阶段唯一激活技能 |
 
 ## 约定
 
@@ -56,9 +58,3 @@
 | 意图 | 推荐技能 |
 |------|----------|
 | 将已有项目迁入 AI Native 结构 | `/an-init` |
-| 开始一个功能、修复、重构或文档任务 | `/an-task` |
-| 拆分大型需求或长任务 | `/an-task-split` |
-| 探测或刷新测试、构建、代码检查、生成命令 | `/an-recipes` |
-| 根据代码和已完成任务刷新背景知识 | `/an-refresh` |
-| 评价任务是否真的完成 | `/an-eval` |
-| 归档已完成的任务产出 | `/an-archive` |

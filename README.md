@@ -6,8 +6,6 @@
 
 ## 快速开始
 
-### 方式一：迁移现有项目
-
 如果你有一个现有的项目想要转换为 AI Native 结构：
 
 ```bash
@@ -27,21 +25,7 @@ cp -r /path/to/project-b ./projects/
 
 AI 会自动分析 `projects/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `conventions/` 规范，并通过 `AGENTS.md` 路由给支持 AGENTS 的工具读取。
 初始化时会主动询问是否使用子代理并行处理“可执行命令清单”和“背景扫描”。未启用子代理时，会在主流程中顺序执行同样脚本。
-
-### 方式二：从零开始
-
-如果你要从零开始一个新项目：
-
-1. 复制模板到新项目目录
-2. 直接告诉 AI 你的需求，比如：「帮我开发一个新功能」
-3. AI 会按照工作流，从需求分析到代码生成逐步引导你
-
-**流程**：
-```
-/an-task 需求描述 → artifacts/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → testing/ → projects/
-```
-
-AI 会在 `artifacts/` 中创建任务产出目录，按阶段生成文档，最终在 `projects/` 中生成代码。
+模板初始化前只激活 `/an-init`；其他 AI Native 项目技能暂存在 `skills/`，会在 `/an-init` 完成后移动到 `.agents/skills/` 并删除暂存目录。
 
 ## 目录结构
 
@@ -50,6 +34,10 @@ AI 会在 `artifacts/` 中创建任务产出目录，按阶段生成文档，最
 ```
 ai-native-template/
 ├── AGENTS.md           # AI 入口文件
+├── .agents/
+│   └── skills/
+│       └── an-init/    # 模板阶段唯一激活技能
+├── skills/             # 初始化后安装到 .agents/skills/ 的项目技能暂存目录
 ├── conventions/        # 规范定义（由 AGENTS.md 路由加载）
 │   ├── principles.md   # 核心原则
 │   ├── workflow.md      # 工作流规范
@@ -64,6 +52,9 @@ ai-native-template/
 ```
 initialized-project/
 ├── AGENTS.md           # AI 入口文件（已填充项目背景）
+├── .agents/
+│   ├── recipes.json    # 可执行命令清单
+│   └── skills/         # 初始化后激活的 AI Native 项目技能
 ├── conventions/        # 规范（由 AGENTS.md 路由加载）
 │   ├── workflow.md      # 工作流规范
 │   ├── document.md     # 文档编写规范
@@ -84,17 +75,17 @@ initialized-project/
 
 ## 可用命令
 
-| 命令 | 用途 |
-|------|------|
-| `/an-init` | 迁移现有项目，分析 projects/ 下各工程的代码生成文档 |
-| `/an-task` | 标准化流程实现 feature |
-| `/an-task-split` | 将大任务拆分为多个子任务 |
-| `/an-recipes` | 探测并生成可执行命令清单 |
-| `/an-refresh` | 根据实际代码反向更新 background 背景知识库 |
-| `/an-eval` | 根据验收标准、测试证据、风险关闭和交付状态评价任务质量 |
-| `/an-archive` | 将已完成的任务产出归档到 `artifacts/archive/` |
+| 命令 | 可用阶段 | 用途 |
+|------|----------|------|
+| `/an-init` | 模板初始化前 | 迁移现有项目，分析 projects/ 下各工程的代码生成文档，并安装项目期技能 |
+| `/an-task` | 初始化后 | 标准化流程实现 feature |
+| `/an-task-split` | 初始化后 | 将大任务拆分为多个子任务 |
+| `/an-recipes` | 初始化后 | 探测并生成可执行命令清单 |
+| `/an-refresh` | 初始化后 | 根据实际代码反向更新 background 背景知识库 |
+| `/an-eval` | 初始化后 | 根据验收标准、测试证据、风险关闭和交付状态评价任务质量 |
+| `/an-archive` | 初始化后 | 将已完成的任务产出归档到 `artifacts/archive/` |
 
-> 从零开始不需要命令，直接告诉 AI 你的需求即可。
+> 该模板只支持已有项目改造。`projects/` 为空时，`/an-init` 会停止并提示先复制现有工程。
 
 ## 工作流
 

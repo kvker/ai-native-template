@@ -7,6 +7,11 @@ const root = path.resolve(args.root || "projects");
 const format = args.format || (args.write ? "json" : "markdown");
 
 const projects = scanProjects(root);
+if (!projects.length) {
+  console.error(`No project directories found under ${path.relative(process.cwd(), root) || "."}. Copy existing project code into projects/ before running this command.`);
+  process.exit(1);
+}
+
 const result = {
   schemaVersion: 1,
   root: path.relative(process.cwd(), root) || ".",
@@ -194,10 +199,6 @@ function rel(file) {
 
 function toMarkdown(data) {
   const lines = ["# Executable Recipes", ""];
-  if (!data.projects.length) {
-    lines.push("No projects detected.");
-    return lines.join("\n");
-  }
   for (const project of data.projects) {
     lines.push(`## ${project.name}`, "", `- Path: \`${project.path}\``, `- Kind: \`${project.kind}\``, "");
     if (!project.recipes.length) {
