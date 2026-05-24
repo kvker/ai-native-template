@@ -11,14 +11,14 @@ description: 将已完成的 artifacts 产出目录归档到 artifacts/archive/ 
 
 ### 1. 确认目标 artifacts
 
-**如果用户指定了 artifacts 名称**（如"归档 user-login"），直接定位。
+**如果用户指定了 artifacts 名称**（如"归档 {artifact-name}"），直接定位。
 
 **如果用户未指定**，列出 `artifacts/` 下所有非 `archive/` 的子目录供用户选择：
 
 ```
 可用 artifacts:
-1. 20260415__user-login
-2. 20260416__fix-payment
+1. 20260415__feature-a
+2. 20260416__fix-issue
 请指定要归档的 artifacts（输入序号或名称）。
 ```
 
@@ -33,7 +33,7 @@ description: 将已完成的 artifacts 产出目录归档到 artifacts/archive/ 
 
 ```
 artifacts/archive/
-└── 20260415__user-login/
+└── 20260415__feature-a/
     ├── raw-input/
     ├── requirements/
     ├── design/

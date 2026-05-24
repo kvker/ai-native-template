@@ -1,11 +1,3 @@
----
-paths:
-  - "artifacts/**/*.md"
-  - "background/**/*.md"
-  - "convention/**/*.md"
-  - "AGENTS.md"
----
-
 # 文档编写规范
 
 ## 基本原则

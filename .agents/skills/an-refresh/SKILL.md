@@ -50,9 +50,9 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 
 1. 读取 `background/` 下所有文档，了解当前记录的状态
 2. 扫描 `projects/` 目录，提取实际信息：
-   - 技术栈版本（package.json / go.mod / pom.xml 等）
+   - 技术栈版本和工具链信息
    - 目录结构变化（新增/删除的模块）
-   - 新增的 API 接口、数据模型
+   - 新增的对外入口、交互边界、数据结构
    - 配置变更
 3. 扫描已完成的 `artifacts/` 任务，提取隐含的背景信息：
    - 已上线的功能（更新 features 状态）
@@ -63,11 +63,11 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 
 | 来源 | 抽取内容 | 更新目标 |
 |------|----------|----------|
-| package / pyproject / go.mod / pom.xml | 技术栈、版本、脚本、依赖 | `background/tech/stack.md` |
-| 路由文件和控制器 | 页面路由、接口端点 | `background/features.md`、`background/domains.md` |
-| 数据模型、实体、迁移文件 | 数据模型和领域对象 | `background/domains.md` |
+| 特征文件、依赖和配置 | 技术栈、版本、脚本、依赖 | `background/tech/stack.md` |
+| 对外入口和交互边界 | 功能入口、协议、集成点 | `background/features.md`、`background/domains.md` |
+| 数据结构和持久化变更 | 数据模型和领域对象 | `background/domains.md` |
 | 测试报告、质量评价报告 | 测试证据和质量状态 | `background/features.md` |
-| `.agents/recipes.json` | 验证、构建、代码生成命令 | `convention/code-style.md` 或 `background/tech/stack.md` |
+| `.agents/recipes.json` | 验证、构建、代码生成命令 | `conventions/code-style.md` 或 `background/tech/stack.md` |
 
 **产出物**：向用户展示扫描发现，格式如下：
 
@@ -80,9 +80,9 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 - ...
 
 发现的差异：
-1. [stack.md] React 版本记录为 18.x，实际为 19.x
-2. [overview.md] 缺少已上线的「用户通知」功能模块
-3. [structure.md] 新增了 projects/apps/notification/ 目录未记录
+1. [stack.md] 技术栈记录与实际不一致
+2. [overview.md] 缺少已上线功能模块
+3. [structure.md] 新增目录未记录
 
 需要新增的文档：
 - background/domains.md（当前不存在，但代码中已出现明显的领域模型）
@@ -145,8 +145,8 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 ✅ 背景知识库已刷新
 
 更新文件：
-- background/tech/stack.md（更新 React 版本、新增 notification 模块依赖）
-- background/product/overview.md（补充通知功能模块描述）
+- background/tech/stack.md（更新技术栈和依赖摘要）
+- background/product/overview.md（补充功能模块描述）
 
 新增文件：
 - background/domains.md（从代码中提取领域模型）
@@ -155,7 +155,7 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 - background/tech/code-style.md
 ```
 
-2. 提醒用户是否需要同步更新 `convention/` 下的规范文件
+2. 提醒用户是否需要同步更新 `conventions/` 下的规范文件
 
 ---
 
@@ -166,8 +166,8 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 | tech | 技术栈、依赖版本、工具链 | `background/tech/stack.md` |
 | product | 产品功能、模块描述 | `background/product/overview.md` |
 | domains | 领域模型、业务规则 | `background/domains.md` |
-| structure | 目录结构规范 | `convention/structure.md` |
-| code-style | 代码风格 | `convention/code-style.md` |
+| structure | 目录结构规范 | `conventions/structure.md` |
+| code-style | 代码风格 | `conventions/code-style.md` |
 | features | 功能状态追踪 | `background/features.md` |
 | all | 全部检查 | 以上所有 |
 

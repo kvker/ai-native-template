@@ -39,6 +39,6 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --writ
 ## 执行约束
 
 - 先读 `.agents/recipes.json`；不存在或过期时运行探测脚本。
-- 不自动运行 dev server，除非前端验证需要且用户允许。
-- 高成本命令先说明原因；网络安装、数据库迁移、破坏性命令需要用户确认。
+- 不自动运行开发服务，除非验证需要且用户允许。
+- 高成本命令先说明原因；网络安装、数据变更、破坏性命令需要用户确认。
 - 命令失败时，记录失败命令、工作目录、退出码和关键输出。

@@ -15,17 +15,17 @@
 
 # 2. 将你的项目代码复制到 projects 目录
 # 单项目（复制到 projects/ 下，会保留原始文件夹名）：
-cp -r /path/to/your-project ./projects/
+cp -r /path/to/project ./projects/
 
-# 多项目（前后端分离等）：
-cp -r /path/to/frontend ./projects/
-cp -r /path/to/backend ./projects/
+# 多项目：
+cp -r /path/to/project-a ./projects/
+cp -r /path/to/project-b ./projects/
 
 # 3. 执行初始化命令
 /an-init
 ```
 
-AI 会自动分析 `projects/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `convention/` 规范，并通过 `AGENTS.md` 路由给支持 AGENTS 的工具读取。
+AI 会自动分析 `projects/` 下的每个子目录（每个视为一个独立工程），生成 `background/` 文档和 `conventions/` 规范，并通过 `AGENTS.md` 路由给支持 AGENTS 的工具读取。
 初始化时会主动询问是否使用子代理并行处理“可执行命令清单”和“背景扫描”。未启用子代理时，会在主流程中顺序执行同样脚本。
 
 ### 方式二：从零开始
@@ -33,12 +33,12 @@ AI 会自动分析 `projects/` 下的每个子目录（每个视为一个独立�
 如果你要从零开始一个新项目：
 
 1. 复制模板到新项目目录
-2. 直接告诉 AI 你的需求，比如：「帮我开发一个用户登录功能」
+2. 直接告诉 AI 你的需求，比如：「帮我开发一个新功能」
 3. AI 会按照工作流，从需求分析到代码生成逐步引导你
 
 **流程**：
 ```
-/an-task 需求描述 → artifacts/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → projects/
+/an-task 需求描述 → artifacts/{feature}/raw-input/ → requirements/ → design/ → tech-spec/ → implementation/ → testing/ → projects/
 ```
 
 AI 会在 `artifacts/` 中创建任务产出目录，按阶段生成文档，最终在 `projects/` 中生成代码。
@@ -50,7 +50,7 @@ AI 会在 `artifacts/` 中创建任务产出目录，按阶段生成文档，最
 ```
 ai-native-template/
 ├── AGENTS.md           # AI 入口文件
-├── convention/         # 规范定义（由 AGENTS.md 路由加载）
+├── conventions/        # 规范定义（由 AGENTS.md 路由加载）
 │   ├── principles.md   # 核心原则
 │   ├── workflow.md      # 工作流规范
 │   └── document.md     # 文档编写规范
@@ -62,9 +62,9 @@ ai-native-template/
 ### 初始化后（执行 /an-init）
 
 ```
-your-project/
+initialized-project/
 ├── AGENTS.md           # AI 入口文件（已填充项目背景）
-├── convention/         # 规范（由 AGENTS.md 路由加载）
+├── conventions/        # 规范（由 AGENTS.md 路由加载）
 │   ├── workflow.md      # 工作流规范
 │   ├── document.md     # 文档编写规范
 │   ├── structure.md    # 目录结构规范（生成）
@@ -78,8 +78,8 @@ your-project/
 ├── artifacts/          # 任务产出目录
 │   └── AGENTS.md       # 产出目录说明
 └── projects/          # 实际工程项目（每个子目录为一个工程）
-    ├── frontend/       # 前端工程（示例）
-    └── backend/        # 后端工程（示例）
+    ├── project-a/      # 工程示例
+    └── project-b/      # 工程示例
 ```
 
 ## 可用命令

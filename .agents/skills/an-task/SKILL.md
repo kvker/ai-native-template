@@ -37,13 +37,13 @@ description: 根据输入的任务描述，按 AI Native 标准工作流驱动�
 | 用户已有明确方案或接口约定 | L2 标准开发 | 保存原始输入，从技术规范开始，再实现、验证、质量评价 |
 | 需求模糊、新功能、跨模块、架构决策 | L3 完整流程 | raw-input → requirements → design → tech-spec → implementation → testing → deployment → 质量评价 |
 
-判断依据见 `convention/flow-policy.md`。判断后先告诉用户将采用哪个等级。L0/L1 可直接完成后总结；L2 默认技术规范后确认；L3 需要关键阶段确认。
+判断依据见 `conventions/flow-policy.md`。判断后先告诉用户将采用哪个等级。L0/L1 可直接完成后总结；L2 默认技术规范后确认；L3 需要关键阶段确认。
 
 ## 升级条件
 
 出现以下情况时，至少升级到 L2，高风险时升级到 L3：
 
-- 公开接口、数据库结构、认证鉴权、支付、权限、部署配置。
+- 公开契约、持久化结构、安全边界、权限、部署配置。
 - 跨工程或跨核心模块。
 - 需求存在开放问题或验收标准不明确。
 - 需要新增依赖、数据迁移、外部服务或破坏性命令。
@@ -71,10 +71,10 @@ raw-input → requirements → design → tech-spec → implementation → testi
 
 ### 通用规则
 
-1. 每个阶段在 `artifacts/{YYYYMMDD}__{feature-name}/` 对应子目录下产出文件（日期为创建当天的 `YYYYMMDD` 格式，如 `20260402__user-login`）
+1. 每个阶段在 `artifacts/{YYYYMMDD}__{feature-name}/` 对应子目录下产出文件（日期为创建当天的 `YYYYMMDD` 格式，如 `20260402__feature-name`）
 2. 每阶段结束：确认产出物 → 更新产出目录 AGENTS.md 索引 → 询问用户是否进入下一阶段
 3. 用户可随时暂停、回退、修改之前的产出
-4. 不要启动前端服务，默认已经启动
+4. 不要主动启动服务，默认必要服务已经启动
 
 ---
 
@@ -162,7 +162,7 @@ artifacts/{YYYYMMDD}__{feature-name}/raw-input/
 ## 技术选型决策
 | 决策点 | 选项 | 最终选择 | 理由 |
 |--------|------|---------|------|
-| 认证方式 | JWT / Session | JWT | 无状态、扩展性好 |
+| 方案选择 | 方案 A / 方案 B | 方案 A | {选择理由} |
 | ... | ... | ... | ... |
 
 ## 风险与权衡
@@ -195,7 +195,7 @@ artifacts/{YYYYMMDD}__{feature-name}/raw-input/
 ## 变更清单
 | 序号 | 变更项 | 文件路径 | 变更类型 | 说明 |
 |------|--------|---------|---------|------|
-| 1 | 新增 validateUser | src/auth/login.ts | 新增 | 用户密码校验 |
+| 1 | 新增 {能力名称} | {文件路径} | 新增 | {变更说明} |
 
 ## 配置变更
 {需要新增或修改的配置文件}

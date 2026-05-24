@@ -15,7 +15,7 @@
 | 目录 | 用途 | AI 行为 |
 |------|------|---------|
 | [background](background/) | 静态背景知识 | 只读，了解领域知识 |
-| [convention](convention/) | 项目约定规范 | 开始任务前按需读取，作为行为约束 |
+| [conventions](conventions/) | 项目约定规范、对话长期规则与优化记录 | 开始任务前按需读取；对话过程中自动感知并按需写入 |
 | [artifacts](artifacts/) | 任务产出目录 | 频繁读写，跟踪任务产出 |
 | [projects](projects/) | 实际工程项目 | 实现阶段才访问，每个子目录为一个独立工程 |
 
@@ -36,10 +36,12 @@
 
 | 规范 | 用途 |
 |------|------|
-| [principles](convention/principles.md) | AI Native 核心原则 |
-| [workflow](convention/workflow.md) | 标准工作流 |
-| [flow-policy](convention/flow-policy.md) | 流程轻重判断 |
-| [document](convention/document.md) | 文档编写规范 |
+| [principles](conventions/principles.md) | AI Native 核心原则 |
+| [workflow](conventions/workflow.md) | 标准工作流 |
+| [flow-policy](conventions/flow-policy.md) | 流程轻重判断 |
+| [document](conventions/document.md) | 文档编写规范 |
+| [rules](conventions/rules.md) | 对话过程中的长期记忆感知与沉淀 |
+| [memories](conventions/memories/AGENTS.md) | 对话优化记录索引 |
 
 ## 当前活跃 Artifacts
 

@@ -1,6 +1,6 @@
 ---
 name: an-init
-description: 将现有工程转换为 AI Native 项目结构。当用户想要：1) 将现有项目转换为 AI Native 格式 2) 为已有代码生成 background/convention/artifacts 文档 3) 执行 /an-init 命令 4) 让 AI 理解并接管现有项目 时触发此技能。**始终使用中文与用户沟通。**
+description: 将现有工程转换为 AI Native 项目结构。当用户想要：1) 将现有项目转换为 AI Native 格式 2) 为已有代码生成 background/conventions/artifacts 文档 3) 执行 /an-init 命令 4) 让 AI 理解并接管现有项目 时触发此技能。**始终使用中文与用户沟通。**
 ---
 
 # AI Native 项目初始化
@@ -22,11 +22,11 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
      请将你的现有工程代码复制到 projects/ 目录：
 
      单项目：
-     cp -r /path/to/your-project ./projects/my-project
+     cp -r /path/to/project ./projects/project
 
-     多项目（前后端分离等）：
-     cp -r /path/to/frontend ./projects/frontend
-     cp -r /path/to/backend ./projects/backend
+     多项目：
+     cp -r /path/to/project-a ./projects/project-a
+     cp -r /path/to/project-b ./projects/project-b
 
      完成后重新执行 /an-init
      ```
@@ -37,7 +37,7 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
    我可以用两个子代理并行处理初始化中的独立扫描：
 
    1. 命令清单子代理：探测测试、构建、代码检查、类型检查、代码生成命令并生成 .agents/recipes.json
-   2. 背景扫描子代理：抽取依赖包、路由、接口、数据模型、测试报告线索
+   2. 背景扫描子代理：抽取依赖、结构、接口、模型、测试报告线索
 
    是否使用子代理并行处理这两项？如果不用，我会在主流程中顺序执行同样脚本。
    ```
@@ -56,9 +56,9 @@ description: 将现有工程转换为 AI Native 项目结构。当用户想要�
 
 | 执行者 | 职责 | 输出 |
 |--------|------|------|
-| 主代理 | 识别工程、提问、合并文档、最终报告 | `AGENTS.md`、`background/`、`convention/` |
+| 主代理 | 识别工程、提问、合并文档、最终报告 | `AGENTS.md`、`background/`、`conventions/` |
 | 命令清单子代理 | 探测测试、构建、代码检查、类型检查、代码生成命令 | `.agents/recipes.json` 和命令摘要 |
-| 背景扫描子代理 | 抽取依赖包、路由、接口、数据模型、测试报告线索 | 背景扫描摘要 |
+| 背景扫描子代理 | 抽取依赖、结构、接口、模型、测试报告线索 | 背景扫描摘要 |
 
 命令清单子代理任务：
 
@@ -79,9 +79,9 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --writ
 node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
 
 返回：
-1. 依赖包、脚本、依赖摘要
-2. 路由和接口线索
-3. 数据模型、领域模型线索
+1. 依赖、脚本和工具链摘要
+2. 对外入口和交互边界线索
+3. 数据结构和领域模型线索
 4. 测试报告和质量评价报告线索
 5. 需要主代理人工判断的待确认项
 ```
@@ -95,20 +95,15 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 ```
 对每个工程子目录：
 1. 进入 projects/{工程名}/
-2. 检查是否存在 package.json、pom.xml 等特征文件
-3. 根据文件内容判断技术栈
+2. 检查是否存在能表明工程类型的特征文件
+3. 根据文件内容总结技术栈
 ```
 
-| 文件存在 | 项目类型 |
-|----------|----------|
-| `package.json` + `react` | React 前端 |
-| `package.json` + `vue` | Vue 前端 |
-| `package.json` + `next` | Next.js 全栈 |
-| `package.json` + `express` | Express 后端 |
-| `package.json` + `nest` | NestJS 后端 |
-| `pom.xml` | Java/Maven |
-| `requirements.txt` | Python |
-| `go.mod` | Go |
+| 证据 | 输出 |
+|------|------|
+| 特征文件、依赖、脚本、配置 | 技术栈摘要 |
+| 目录结构和入口文件 | 工程职责摘要 |
+| 构建、测试、代码检查配置 | 可执行命令线索 |
 
 **目录结构分析**：
 - 扫描每个工程生成目录树
@@ -150,8 +145,8 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 
 | 代码事实 | 附加问题 |
 |----------|----------|
-| 检测到后端框架（express/nest/fastapi/spring 等） | 是否有接口文档链接？ |
-| 检测到 UI 框架（react/vue 等） | 是否有设计稿链接（如 Figma）？ |
+| 检测到对外接口或服务入口 | 是否有接口、协议或集成文档？ |
+| 检测到用户界面相关工程 | 是否有设计稿或交互规范？ |
 
 - 禁止 AI 自行判断"是否有后台管理功能"等无法从代码客观验证的事项。
 - 如果无法确定是否满足条件，默认附加问题而非跳过。
@@ -188,7 +183,7 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 | 路径 | 描述 |
 |------|------|
 | background/ | 项目背景知识 |
-| convention/ | 项目约定规范 |
+| conventions/ | 项目约定规范、对话长期规则与优化记录 |
 
 ### 技术栈
 
@@ -198,8 +193,8 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 
 | 资源 | 链接 |
 |------|------|
-| 设计稿 | {用户输入Figma链接，若无则留空} |
-| API 文档 | {用户输入，若无则留空} |
+| 设计或交互文档 | {用户输入，若无则留空} |
+| 对外契约文档 | {用户输入，若无则留空} |
 
 ## 工作流阶段
 
@@ -218,6 +213,13 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 - 禁止自行脑补未提及的需求、功能或业务逻辑。
 - 所有背景知识必须来自代码事实或用户明确输入。
 - 从代码反推的信息要标注来源；无法确认的信息标记为"待确认"。
+
+## 必读规范
+
+| 规范 | 用途 |
+|------|------|
+| [rules](conventions/rules.md) | 对话过程中的长期记忆感知与沉淀 |
+| [memories](conventions/memories/AGENTS.md) | 对话优化记录索引 |
 
 ## Skill 路由
 
@@ -303,9 +305,6 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 | projects/{工程B} | {工程B名称} | {说明} |
 ```
 
-> 多工程场景：`paths` 保持 `["projects/**"]` 即可覆盖所有工程。
-
-
 # 代码风格规范
 
 ## 命名规范
@@ -317,12 +316,38 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 {从代码推断}
 ```
 
-> 多工程场景：保留所有工程使用的文件后缀。
-> 示例：`paths: ["projects/**/*.{ts,tsx,js,jsx}", "projects/**/*.java"]`
-
 #### .agents/recipes.json
 
 由 `/an-recipes` 或命令清单子代理探测生成，记录验证、构建、生成和开发命令清单。
+
+#### conventions/rules.md
+
+```markdown
+# 对话长期记忆规则
+
+## 目标
+
+AI 在任意对话过程中持续感知用户是否正在“纠错、约束、提升”AI 的工作方式。若满足长期沉淀条件，应写入 `conventions/memories/` 中对应功能主题文件；若同名主题已存在，则追加到该文件。
+
+## 写入规则
+
+- `conventions/rules.md` 只保存长期记忆机制的指导规则，不作为具体记忆内容的回写目标。
+- `conventions/memories/` 保存具体优化记录、来源、分类、判断依据和后续追加内容。
+- memory 文件使用功能性名字，不带日期，例如 `dialog-memory.md`、`git-workflow.md`。
+- 写入前先查找同名或同主题 memory 文件；找到则追加，找不到才创建新文件。
+- 不要把对话流水直接追加到 `rules.md`；具体记录写入 `memories/`。
+- 不写入密钥、凭据、隐私数据、临时路径或不可泛化的上下文。
+```
+
+#### conventions/memories/AGENTS.md
+
+```markdown
+# memories
+
+| Memory | 描述 |
+|--------|------|
+| - | - |
+```
 
 #### artifacts/AGENTS.md
 
@@ -363,7 +388,7 @@ artifacts/{YYYYMMDD}__{feature-name}/
 ✅ AI Native 项目初始化完成！
 
 识别到 1 个工程：
-- my-project：React 前端 - 基于 Next.js + TypeScript
+- project-a：{工程类型} - {主要技术摘要}
 
 生成文件：
 ...
@@ -374,15 +399,17 @@ artifacts/{YYYYMMDD}__{feature-name}/
 ✅ AI Native 项目初始化完成！
 
 识别到 2 个工程：
-- frontend：React 前端 - 基于 Next.js + TypeScript
-- backend：NestJS 后端 - Node.js + PostgreSQL
+- project-a：{工程类型} - {主要技术摘要}
+- project-b：{工程类型} - {主要技术摘要}
 
 生成文件：
 - AGENTS.md（更新项目背景）
 - background/product/overview.md
-- background/tech/stack.md（包含 frontend 和 backend 两节）
-- convention/structure.md（包含两个工程的目录结构）
-- convention/code-style.md（paths 包含 .ts 和 .js 文件）
+- background/tech/stack.md（按工程记录技术栈）
+- conventions/structure.md（包含两个工程的目录结构）
+- conventions/code-style.md（包含代码风格约定）
+- conventions/rules.md（对话长期记忆机制）
+- conventions/memories/AGENTS.md（对话优化记录索引）
 - .agents/recipes.json（可执行命令清单）
 - background/AGENTS.md
 - artifacts/AGENTS.md
@@ -390,7 +417,7 @@ artifacts/{YYYYMMDD}__{feature-name}/
 下一步：
 1. 在 artifacts/ 中创建你的第一个任务产出目录
 2. 参考 background/ 了解项目背景
-3. 规范已写入 convention/，编辑代码和目录结构时自动生效
+3. 规范已写入 conventions/，编辑代码、目录结构和对话长期记忆时自动生效
 ```
 
 ---
