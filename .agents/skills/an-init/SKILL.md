@@ -236,11 +236,12 @@ node skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts art
 ## Skill 路由
 
 当用户描述开发意图（如"我要做一个XXX"、"添加XXX"、"修复XXX"、"重构XXX"等）时，
-先询问用户是否使用 /an-task 标准工作流推进，提供以下选项：
-1. 完整流程（raw-input → requirements → design → tech-spec → implementation → testing → deployment）
-2. 快速修复（直接 implementation）
-3. 自由对话（不使用工作流）
-不要自动启动工作流。
+使用 `/an-task`。AI 根据 [flow-policy](conventions/flow-policy.md) 自主判断 L0/L1/L2/L3 流程等级、技术方案、验证命令和推进顺序。
+
+- L0/L1：可直接实现和验证，完成后总结改动、理由和验证结果。
+- L2/L3：创建并维护对应 artifacts，按所需阶段推进并记录决策。
+- 不要要求用户在"完整流程 / 快速修复 / 自由对话"中选择。
+- 只有需求目标不明确、业务语义必须由用户决定、涉及权限/数据/安全/部署等高风险边界、破坏性操作或外部授权时，才暂停请求确认。
 ```
 
 #### background/product/overview.md
