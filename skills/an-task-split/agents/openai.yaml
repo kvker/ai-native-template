@@ -1,0 +1,4 @@
+interface:
+  display_name: "任务拆分"
+  short_description: "将大任务拆成多个可独立推进的子任务"
+  default_prompt: "使用 $an-task-split 将大任务拆分为多个 requirements 文档控制在 200 行以内的子任务。"

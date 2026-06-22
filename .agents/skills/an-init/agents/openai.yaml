@@ -1,0 +1,4 @@
+interface:
+  display_name: "智能原生初始化"
+  short_description: "将现有工程迁入智能原生项目结构"
+  default_prompt: "使用 $an-init 将现有工程转换为智能原生项目结构，并生成必要的 background、conventions 和 artifacts 文档。"

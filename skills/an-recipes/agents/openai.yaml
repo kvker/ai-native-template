@@ -1,0 +1,4 @@
+interface:
+  display_name: "可执行命令清单"
+  short_description: "探测并维护构建、检查、测试等项目命令"
+  default_prompt: "使用 $an-recipes 探测、生成和运行智能原生可执行命令清单。"

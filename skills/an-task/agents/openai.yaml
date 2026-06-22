@@ -1,0 +1,4 @@
+interface:
+  display_name: "智能原生任务开发"
+  short_description: "按风险分级推进功能、修复、重构或文档任务"
+  default_prompt: "使用 $an-task 根据任务描述判断流程等级，并推进实现、验证和总结。"

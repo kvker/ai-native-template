@@ -1,0 +1,4 @@
+interface:
+  display_name: "背景知识刷新"
+  short_description: "根据代码和任务结果反向更新 background 文档"
+  default_prompt: "使用 $an-refresh 根据实际代码和已完成任务刷新 background 背景知识库。"

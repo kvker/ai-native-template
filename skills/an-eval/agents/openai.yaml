@@ -1,0 +1,4 @@
+interface:
+  display_name: "任务质量评价"
+  short_description: "按验收、实现、测试和风险评价智能原生任务完成度"
+  default_prompt: "使用 $an-eval 按验收标准、实现可追踪性、测试证据、风险关闭和发布准备度评价任务质量。"

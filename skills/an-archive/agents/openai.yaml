@@ -1,0 +1,4 @@
+interface:
+  display_name: "产物归档"
+  short_description: "将已完成的任务产出移动到归档目录"
+  default_prompt: "使用 $an-archive 将已完成的 artifacts 产出目录归档到 artifacts/archive/。"
