@@ -7,10 +7,6 @@ const root = path.resolve(args.root || "projects");
 const format = args.format || (args.write ? "json" : "markdown");
 
 const projects = scanProjects(root);
-if (!projects.length) {
-  console.error(`No project directories found under ${path.relative(process.cwd(), root) || "."}. Copy existing project code into projects/ before running this command.`);
-  process.exit(1);
-}
 
 const result = {
   schemaVersion: 1,
@@ -53,16 +49,18 @@ function scanProjects(rootDir) {
     .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
     .map((entry) => {
       const dir = path.join(rootDir, entry.name);
+      const codeRecipes = detectCodeRecipes(dir);
+      const generalRecipes = detectGeneralRecipes(dir);
       return {
         name: entry.name,
         path: rel(dir),
-        kind: detectKind(dir),
-        recipes: detectRecipes(dir),
+        kind: codeRecipes.length ? detectCodeKind(dir) : detectGeneralKind(dir),
+        recipes: [...codeRecipes, ...generalRecipes],
       };
     });
 }
 
-function detectKind(dir) {
+function detectCodeKind(dir) {
   if (exists(dir, "package.json")) return detectPackageKind(dir);
   if (exists(dir, "pyproject.toml") || exists(dir, "requirements.txt")) return "python";
   if (exists(dir, "go.mod")) return "go";
@@ -83,7 +81,16 @@ function detectPackageKind(dir) {
   return "node";
 }
 
-function detectRecipes(dir) {
+function detectGeneralKind(dir) {
+  const topFiles = listTopLevelFiles(dir, 100);
+  const allFiles = listFiles(dir, 200);
+  if (topFiles.some((f) => /\.(md|mdx)$/.test(f)) || allFiles.some((f) => /\.(md|mdx)$/.test(f))) return "markdown-docs";
+  if (topFiles.some((f) => /\.(json|yaml|yml)$/.test(f)) || allFiles.some((f) => /\.(json|yaml|yml)$/.test(f))) return "data-config";
+  if (topFiles.some((f) => /\.(png|jpg|jpeg|svg|fig|sketch)$/.test(f))) return "design-assets";
+  return "generic";
+}
+
+function detectCodeRecipes(dir) {
   if (exists(dir, "package.json")) return nodeRecipes(dir);
   if (exists(dir, "pyproject.toml") || exists(dir, "requirements.txt")) return pythonRecipes(dir);
   if (exists(dir, "go.mod")) return goRecipes(dir);
@@ -91,6 +98,34 @@ function detectRecipes(dir) {
   if (exists(dir, "build.gradle") || exists(dir, "build.gradle.kts")) return gradleRecipes(dir);
   if (exists(dir, "Cargo.toml")) return rustRecipes(dir);
   return [];
+}
+
+function detectGeneralRecipes(dir) {
+  const recipes = [];
+  const files = listFiles(dir, 200);
+  const topFiles = listTopLevelFiles(dir, 100);
+
+  // Markdown docs: link check / word count / lint
+  const mdFiles = files.filter((f) => /\.(md|mdx)$/.test(f));
+  if (mdFiles.length) {
+    recipes.push(recipe("docs-count", "check", "find . -name '*.md' -type f | wc -l", dir, "medium", "markdown files present", true));
+    recipes.push(recipe("docs-link-check", "check", "# manual: review Markdown links", dir, "low", "markdown files present", false));
+    recipes.push(recipe("docs-word-count", "check", "# manual: review Markdown word count", dir, "low", "markdown files present", false));
+  }
+
+  // JSON/YAML data validation
+  const dataFiles = files.filter((f) => /\.(json|yaml|yml)$/.test(f));
+  if (dataFiles.length) {
+    recipes.push(recipe("data-validate", "check", "# manual: validate data/config files", dir, "low", "data files present", false));
+  }
+
+  // Design assets
+  const imageFiles = topFiles.filter((f) => /\.(png|jpg|jpeg|svg|fig|sketch)$/.test(f));
+  if (imageFiles.length) {
+    recipes.push(recipe("assets-list", "check", "find . -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.svg' \) | sort", dir, "medium", "image assets present", true));
+  }
+
+  return recipes;
 }
 
 function nodeRecipes(dir) {
@@ -158,8 +193,8 @@ function rustRecipes(dir) {
   ];
 }
 
-function recipe(id, purpose, command, cwd, confidence, source) {
-  return { id, purpose, command, cwd: rel(cwd), confidence, source };
+function recipe(id, purpose, command, cwd, confidence, source, executable = true) {
+  return { id, purpose, command, cwd: rel(cwd), confidence, source, executable };
 }
 
 function scriptId(purpose, script) {
@@ -171,6 +206,53 @@ function detectPackageManager(dir) {
   if (exists(dir, "yarn.lock")) return "yarn";
   if (exists(dir, "bun.lockb") || exists(dir, "bun.lock")) return "bun";
   return "npm";
+}
+
+function listFiles(rootDir, limit) {
+  const output = [];
+  if (!fs.existsSync(rootDir)) return output;
+  walk(rootDir, "");
+  return output;
+
+  function walk(abs, prefix) {
+    if (output.length >= limit) return;
+    let entries = [];
+    try {
+      entries = fs.readdirSync(abs, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (output.length >= limit) return;
+      if (skip(entry.name)) continue;
+      const childPrefix = prefix ? `${prefix}/${entry.name}` : entry.name;
+      const childAbs = path.join(abs, entry.name);
+      if (entry.isDirectory()) walk(childAbs, childPrefix);
+      else output.push(childPrefix);
+    }
+  }
+}
+
+function listTopLevelFiles(rootDir, limit) {
+  const output = [];
+  if (!fs.existsSync(rootDir)) return output;
+  try {
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      if (output.length >= limit) break;
+      if (entry.name.startsWith(".")) continue;
+      if (entry.isDirectory()) continue;
+      output.push(entry.name);
+    }
+  } catch {
+    return [];
+  }
+  return output;
+}
+
+function skip(name) {
+  return name.startsWith(".") ||
+    ["node_modules", "dist", "build", ".next", "coverage", "target", "vendor", "__pycache__"].includes(name) ||
+    /\.(lock|log|png|jpg|jpeg|gif|webp|pdf|zip|gz|tar|mp4|mov)$/.test(name);
 }
 
 function exists(dir, file) {
@@ -199,15 +281,20 @@ function rel(file) {
 
 function toMarkdown(data) {
   const lines = ["# Executable Recipes", ""];
+  if (!data.projects.length) {
+    lines.push(`No workspace directories found under \`${data.root}\`.`, "");
+    lines.push("You can:", "- Copy existing work into `projects/{workspace}/` and rerun this command.", "- Start from an empty workspace; AI will infer minimal validation actions per task.");
+    return lines.join("\n");
+  }
   for (const project of data.projects) {
     lines.push(`## ${project.name}`, "", `- Path: \`${project.path}\``, `- Kind: \`${project.kind}\``, "");
     if (!project.recipes.length) {
       lines.push("No recipes detected.", "");
       continue;
     }
-    lines.push("| ID | Purpose | Command | CWD | Confidence | Source |", "|----|---------|---------|-----|------------|--------|");
+    lines.push("| ID | Purpose | Command | CWD | Confidence | Source | Executable |", "|----|---------|---------|-----|------------|--------|------------|");
     for (const item of project.recipes) {
-      lines.push(`| \`${item.id}\` | ${item.purpose} | \`${item.command}\` | \`${item.cwd}\` | ${item.confidence} | ${item.source} |`);
+      lines.push(`| \`${item.id}\` | ${item.purpose} | \`${item.command}\` | \`${item.cwd}\` | ${item.confidence} | ${item.source} | ${item.executable ? "yes" : "no"} |`);
     }
     lines.push("");
   }

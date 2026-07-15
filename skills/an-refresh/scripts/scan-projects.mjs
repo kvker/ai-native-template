@@ -14,11 +14,6 @@ const summary = {
   artifactsTesting: scanArtifactsTesting(artifactsRoot),
 };
 
-if (!summary.projects.length) {
-  console.error(`No project directories found under ${rel(root)}. Copy existing project code into projects/ before running this command.`);
-  process.exit(1);
-}
-
 const output = format === "json" ? JSON.stringify(summary, null, 2) : toMarkdown(summary);
 if (args.write) {
   const out = path.resolve(args.write);
@@ -55,15 +50,46 @@ function scanProjects(rootDir) {
 function scanProject(dir, name) {
   const files = listFiles(dir, 800);
   const packageInfo = readPackageInfo(dir);
+  const isCodeWorkspace = !!packageInfo || exists(dir, "go.mod") || exists(dir, "pyproject.toml") || exists(dir, "requirements.txt") || exists(dir, "pom.xml") || exists(dir, "build.gradle") || exists(dir, "build.gradle.kts") || exists(dir, "Cargo.toml");
   return {
     name,
     path: rel(dir),
+    kind: isCodeWorkspace ? detectCodeKind(dir) : detectGeneralKind(dir, files),
     package: packageInfo,
-    routes: detectRoutes(dir, files),
-    apis: detectApis(dir, files),
-    schemas: detectSchemas(dir, files),
-    tests: detectTests(files),
+    routes: isCodeWorkspace ? detectRoutes(dir, files) : [],
+    apis: isCodeWorkspace ? detectApis(dir, files) : [],
+    schemas: isCodeWorkspace ? detectSchemas(dir, files) : [],
+    tests: isCodeWorkspace ? detectTests(files) : { testFileCount: 0, examples: [] },
+    fileTypes: detectFileTypes(files),
+    topLevelFiles: files.slice(0, 20),
   };
+}
+
+function detectCodeKind(dir) {
+  if (exists(dir, "package.json")) {
+    const pkg = readJson(path.join(dir, "package.json"));
+    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+    if (deps.next) return "nextjs";
+    if (deps.react) return "react";
+    if (deps.vue) return "vue";
+    if (deps["@nestjs/core"]) return "nestjs";
+    if (deps.express) return "express";
+    return "node";
+  }
+  if (exists(dir, "pyproject.toml") || exists(dir, "requirements.txt")) return "python";
+  if (exists(dir, "go.mod")) return "go";
+  if (exists(dir, "pom.xml")) return "java-maven";
+  if (exists(dir, "build.gradle") || exists(dir, "build.gradle.kts")) return "java-gradle";
+  if (exists(dir, "Cargo.toml")) return "rust";
+  return "unknown";
+}
+
+function detectGeneralKind(dir, files) {
+  const topFiles = listTopLevelFiles(dir, 100);
+  if (topFiles.some((f) => /\.(md|mdx)$/.test(f)) || files.some((f) => /\.(md|mdx)$/.test(f))) return "markdown-docs";
+  if (topFiles.some((f) => /\.(json|yaml|yml)$/.test(f)) || files.some((f) => /\.(json|yaml|yml)$/.test(f))) return "data-config";
+  if (topFiles.some((f) => /\.(png|jpg|jpeg|svg|fig|sketch)$/.test(f))) return "design-assets";
+  return "generic";
 }
 
 function readPackageInfo(dir) {
@@ -81,6 +107,19 @@ function readPackageInfo(dir) {
   } catch {
     return null;
   }
+}
+
+function detectFileTypes(files) {
+  const counts = {};
+  for (const file of files) {
+    const ext = path.extname(file).toLowerCase();
+    if (!ext) continue;
+    counts[ext] = (counts[ext] || 0) + 1;
+  }
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([ext, count]) => ({ ext, count }));
 }
 
 function detectRoutes(dir, files) {
@@ -167,7 +206,7 @@ function scanArtifactsTesting(dir) {
       const text = readSmall(full) || "";
       return {
         file: rel(full),
-        commandMentions: (text.match(/`[^`]*(test|lint|build|typecheck|check|pytest|go test|cargo test|mvn test)[^`]*`/gi) || []).length,
+        commandMentions: (text.match(/`[^`]*(test|lint|build|typecheck|check|pytest|go test|cargo test|mvn test|validate)[^`]*`/gi) || []).length,
         failureSignals: (text.match(/失败|未通过|❌|failed|failure|error/gi) || []).length,
       };
     });
@@ -198,10 +237,38 @@ function listFiles(rootDir, limit) {
   }
 }
 
+function listTopLevelFiles(rootDir, limit) {
+  const output = [];
+  if (!fs.existsSync(rootDir)) return output;
+  try {
+    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
+      if (output.length >= limit) break;
+      if (entry.name.startsWith(".")) continue;
+      if (entry.isDirectory()) continue;
+      output.push(entry.name);
+    }
+  } catch {
+    return [];
+  }
+  return output;
+}
+
 function skip(name) {
   return name.startsWith(".") ||
     ["node_modules", "dist", "build", ".next", "coverage", "target", "vendor", "__pycache__"].includes(name) ||
     /\.(lock|log|png|jpg|jpeg|gif|webp|pdf|zip|gz|tar|mp4|mov)$/.test(name);
+}
+
+function exists(dir, file) {
+  return fs.existsSync(path.join(dir, file));
+}
+
+function readJson(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return {};
+  }
 }
 
 function readSmall(file) {
@@ -228,10 +295,18 @@ function rel(file) {
 
 function toMarkdown(summary) {
   const lines = ["# Background Scan", ""];
+  if (!summary.projects.length) {
+    lines.push(`No workspace directories found under \`${summary.root}\`.`, "");
+    lines.push("You can start from an empty workspace or copy materials into `projects/{workspace}/`.");
+    return lines.join("\n");
+  }
   for (const project of summary.projects) {
-    lines.push(`## ${project.name}`, "", `- Path: \`${project.path}\``);
+    lines.push(`## ${project.name}`, "", `- Path: \`${project.path}\``, `- Kind: \`${project.kind}\``);
     if (project.package) {
       lines.push(`- Package: \`${project.package.name}\``, `- Scripts: ${Object.keys(project.package.scripts).map((name) => `\`${name}\``).join(", ") || "-"}`);
+    }
+    if (project.fileTypes.length) {
+      lines.push(`- File types: ${project.fileTypes.map((ft) => `\`${ft.ext}\`(${ft.count})`).join(", ")}`);
     }
     lines.push(`- Routes/files: ${project.routes.length}`, `- API endpoints detected: ${project.apis.length}`, `- Schema hints: ${project.schemas.length}`, `- Test files: ${project.tests.testFileCount}`, "");
     if (project.apis.length) {
