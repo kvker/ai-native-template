@@ -5,258 +5,203 @@ import path from "node:path";
 const args = parseArgs(process.argv.slice(2));
 const root = path.resolve(args.root || "projects");
 const format = args.format || (args.write ? "json" : "markdown");
-
-const projects = scanProjects(root);
-
+const scanLimit = parseLimit(args.limit, 600);
 const result = {
-  schemaVersion: 1,
-  root: path.relative(process.cwd(), root) || ".",
-  projects,
+  schemaVersion: 3,
+  generatedAt: new Date().toISOString(),
+  root: rel(root),
+  workspaces: scanWorkspaces(root, scanLimit),
 };
-
 const output = format === "json" ? JSON.stringify(result, null, 2) : toMarkdown(result);
 
 if (args.write) {
-  const out = path.resolve(args.write);
-  fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, `${output}\n`);
+  const target = path.resolve(args.write);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${output}\n`);
 } else {
   process.stdout.write(`${output}\n`);
 }
 
+function scanWorkspaces(rootDir, limit) {
+  if (!fs.existsSync(rootDir)) return [];
+  return fs.readdirSync(rootDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
+    .map((entry) => scanWorkspace(path.join(rootDir, entry.name), entry.name, limit));
+}
+
+function scanWorkspace(dir, name, limit) {
+  const inventory = listFiles(dir, limit);
+  return {
+    name,
+    path: rel(dir),
+    scan: {
+      filesScanned: inventory.files.length,
+      scanLimit: inventory.limit,
+      truncated: inventory.truncated,
+    },
+    fileTypes: countFileTypes(inventory.files),
+    actions: [...detectDeclaredCommands(dir), ...detectInspections(dir, inventory.files)],
+  };
+}
+
+function detectDeclaredCommands(dir) {
+  const actions = [];
+  const packageFile = path.join(dir, "package.json");
+  if (fs.existsSync(packageFile)) {
+    const pkg = readJson(packageFile);
+    const manager = detectPackageManager(dir);
+    let scriptIndex = 0;
+    for (const name of Object.keys(pkg.scripts || {})) {
+      if (!/(test|check|lint|build|validate|verify|format|generate|export|preview)/i.test(name)) continue;
+      scriptIndex += 1;
+      actions.push(commandAction(`package:${slug(name) || `script-${scriptIndex}`}`, inferPurpose(name), manager, ["run", name], dir, `package.json scripts.${name}`, "high"));
+    }
+  }
+
+  if (fs.existsSync(path.join(dir, "go.mod"))) {
+    actions.push(commandAction("go:test", "review", "go", ["test", "./..."], dir, "go.mod", "medium"));
+  }
+  if (fs.existsSync(path.join(dir, "Cargo.toml"))) {
+    actions.push(commandAction("cargo:test", "review", "cargo", ["test"], dir, "Cargo.toml", "medium"));
+    actions.push(commandAction("cargo:check", "review", "cargo", ["check"], dir, "Cargo.toml", "medium"));
+  }
+  if (fs.existsSync(path.join(dir, "pom.xml"))) {
+    actions.push(commandAction("maven:test", "review", "mvn", ["test"], dir, "pom.xml", "medium"));
+  }
+  if (fs.existsSync(path.join(dir, "build.gradle")) || fs.existsSync(path.join(dir, "build.gradle.kts"))) {
+    const runner = fs.existsSync(path.join(dir, "gradlew")) ? "./gradlew" : "gradle";
+    actions.push(commandAction("gradle:test", "review", runner, ["test"], dir, "Gradle build file", "medium"));
+  }
+
+  const pyproject = readMaybe(path.join(dir, "pyproject.toml"));
+  const requirements = readMaybe(path.join(dir, "requirements.txt"));
+  const pythonSource = pyproject ? "pyproject.toml" : requirements ? "requirements.txt" : "";
+  if (/pytest|tool\.pytest/i.test(pyproject) || requirements) {
+    const usesUv = fs.existsSync(path.join(dir, "uv.lock"));
+    actions.push(commandAction("python:pytest", "review", usesUv ? "uv" : "python3", usesUv ? ["run", "pytest"] : ["-m", "pytest"], dir, pythonSource || "python convention", pyproject ? "high" : "medium"));
+  }
+  const pythonHints = pyproject + "\n" + requirements;
+  if (/\bruff\b/i.test(pythonHints)) actions.push(commandAction("python:ruff", "review", "ruff", ["check", "."], dir, pythonSource || "python convention", "high"));
+  if (/\bmypy\b/i.test(pythonHints)) actions.push(commandAction("python:mypy", "review", "mypy", ["."], dir, pythonSource || "python convention", "high"));
+  return actions;
+}
+
+function detectInspections(dir, files) {
+  const actions = [];
+  const has = (pattern) => files.some((file) => pattern.test(file));
+
+  if (has(/\.(md|mdx|txt|rst)$/i)) {
+    actions.push(inspectionAction("inspect:text", "review", "核对文本结构、引用、链接、格式和任务完成标准。", dir, "text materials present"));
+  }
+  if (has(/\.(doc|docx|odt|pdf)$/i)) {
+    actions.push(inspectionAction("inspect:document", "review", "打开或渲染文档，检查分页、字体、内容完整性、链接和可读性。", dir, "document materials present"));
+  }
+  if (has(/\.(ppt|pptx|odp)$/i)) {
+    actions.push(inspectionAction("inspect:presentation", "review", "渲染并逐页检查演示文稿的内容完整性、版式、溢出和可读性。", dir, "presentation materials present"));
+  }
+  if (has(/\.(xls|xlsx|ods)$/i)) {
+    actions.push(inspectionAction("inspect:spreadsheet", "review", "打开表格并检查工作表、字段、公式、格式和关键数据完整性。", dir, "spreadsheet materials present"));
+  }
+  if (has(/\.(json|ya?ml|csv|tsv|xml)$/i)) {
+    actions.push(inspectionAction("inspect:structured-data", "review", "核对结构化材料的格式、字段、完整性和任务约束。", dir, "structured data present"));
+  }
+  if (has(/\.(png|jpe?g|gif|webp|svg|pdf|fig|sketch)$/i)) {
+    actions.push(inspectionAction("inspect:visual", "review", "打开或渲染视觉材料，检查内容完整性、可读性、尺寸和导出结果。", dir, "visual materials present"));
+  }
+  if (has(/\.(mp3|wav|m4a|mp4|mov|webm)$/i)) {
+    actions.push(inspectionAction("inspect:media", "review", "播放媒体材料，检查可访问性、时长、内容完整性和输出质量。", dir, "media materials present"));
+  }
+  actions.push(inspectionAction("inspect:requirements", "review", "逐项核对实际产出与当前任务 requirements，并记录证据和未解决事项。", dir, "AI Native workflow"));
+  return actions;
+}
+
+function commandAction(id, purpose, executable, args, cwd, source, confidence) {
+  return { id, type: "command", purpose, executable, args, cwd: rel(cwd), source, confidence };
+}
+
+function inspectionAction(id, purpose, instruction, cwd, source) {
+  return { id, type: "inspection", purpose, instruction, cwd: rel(cwd), source, confidence: "medium" };
+}
+
+function inferPurpose(name) {
+  if (/generate|export/i.test(name)) return "produce";
+  if (/preview/i.test(name)) return "preview";
+  return "review";
+}
+
+function detectPackageManager(dir) {
+  if (fs.existsSync(path.join(dir, "pnpm-lock.yaml"))) return "pnpm";
+  if (fs.existsSync(path.join(dir, "yarn.lock"))) return "yarn";
+  if (fs.existsSync(path.join(dir, "bun.lock")) || fs.existsSync(path.join(dir, "bun.lockb"))) return "bun";
+  return "npm";
+}
+
+function countFileTypes(files) {
+  const counts = {};
+  for (const file of files) {
+    const ext = path.extname(file).toLowerCase() || "[no-extension]";
+    counts[ext] = (counts[ext] || 0) + 1;
+  }
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([extension, count]) => ({ extension, count }));
+}
+
+function listFiles(rootDir, limit) {
+  const files = [];
+  let truncated = false;
+  walk(rootDir, "");
+  return { files, limit, truncated };
+
+  function walk(dir, prefix) {
+    if (files.length >= limit) {
+      truncated = true;
+      return;
+    }
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (files.length >= limit) {
+        truncated = true;
+        return;
+      }
+      if (shouldSkip(entry.name)) continue;
+      const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+      const absolute = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(absolute, relative);
+      else files.push(relative);
+    }
+  }
+}
+
+function shouldSkip(name) {
+  return name.startsWith(".") || ["node_modules", "dist", "build", "coverage", "target", "vendor", "__pycache__"].includes(name);
+}
+
 function parseArgs(argv) {
   const parsed = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const item = argv[i];
-    if (item.startsWith("--")) {
-      const key = item.slice(2);
-      const next = argv[i + 1];
-      if (!next || next.startsWith("--")) {
-        parsed[key] = true;
-      } else {
-        parsed[key] = next;
-        i += 1;
-      }
+  for (let index = 0; index < argv.length; index += 1) {
+    const item = argv[index];
+    if (!item.startsWith("--")) continue;
+    const key = item.slice(2);
+    const next = argv[index + 1];
+    if (!next || next.startsWith("--")) parsed[key] = true;
+    else {
+      parsed[key] = next;
+      index += 1;
     }
   }
   return parsed;
 }
 
-function scanProjects(rootDir) {
-  if (!fs.existsSync(rootDir)) return [];
-  return fs
-    .readdirSync(rootDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
-    .map((entry) => {
-      const dir = path.join(rootDir, entry.name);
-      const codeRecipes = detectCodeRecipes(dir);
-      const generalRecipes = detectGeneralRecipes(dir);
-      return {
-        name: entry.name,
-        path: rel(dir),
-        kind: codeRecipes.length ? detectCodeKind(dir) : detectGeneralKind(dir),
-        recipes: [...codeRecipes, ...generalRecipes],
-      };
-    });
-}
-
-function detectCodeKind(dir) {
-  if (exists(dir, "package.json")) return detectPackageKind(dir);
-  if (exists(dir, "pyproject.toml") || exists(dir, "requirements.txt")) return "python";
-  if (exists(dir, "go.mod")) return "go";
-  if (exists(dir, "pom.xml")) return "java-maven";
-  if (exists(dir, "build.gradle") || exists(dir, "build.gradle.kts")) return "java-gradle";
-  if (exists(dir, "Cargo.toml")) return "rust";
-  return "unknown";
-}
-
-function detectPackageKind(dir) {
-  const pkg = readJson(path.join(dir, "package.json"));
-  const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-  if (deps.next) return "nextjs";
-  if (deps.react) return "react";
-  if (deps.vue) return "vue";
-  if (deps["@nestjs/core"]) return "nestjs";
-  if (deps.express) return "express";
-  return "node";
-}
-
-function detectGeneralKind(dir) {
-  const topFiles = listTopLevelFiles(dir, 100);
-  const allFiles = listFiles(dir, 200);
-  if (topFiles.some((f) => /\.(md|mdx)$/.test(f)) || allFiles.some((f) => /\.(md|mdx)$/.test(f))) return "markdown-docs";
-  if (topFiles.some((f) => /\.(json|yaml|yml)$/.test(f)) || allFiles.some((f) => /\.(json|yaml|yml)$/.test(f))) return "data-config";
-  if (topFiles.some((f) => /\.(png|jpg|jpeg|svg|fig|sketch)$/.test(f))) return "design-assets";
-  return "generic";
-}
-
-function detectCodeRecipes(dir) {
-  if (exists(dir, "package.json")) return nodeRecipes(dir);
-  if (exists(dir, "pyproject.toml") || exists(dir, "requirements.txt")) return pythonRecipes(dir);
-  if (exists(dir, "go.mod")) return goRecipes(dir);
-  if (exists(dir, "pom.xml")) return mavenRecipes(dir);
-  if (exists(dir, "build.gradle") || exists(dir, "build.gradle.kts")) return gradleRecipes(dir);
-  if (exists(dir, "Cargo.toml")) return rustRecipes(dir);
-  return [];
-}
-
-function detectGeneralRecipes(dir) {
-  const recipes = [];
-  const files = listFiles(dir, 200);
-  const topFiles = listTopLevelFiles(dir, 100);
-
-  // Markdown docs: link check / word count / lint
-  const mdFiles = files.filter((f) => /\.(md|mdx)$/.test(f));
-  if (mdFiles.length) {
-    recipes.push(recipe("docs-count", "check", "find . -name '*.md' -type f | wc -l", dir, "medium", "markdown files present", true));
-    recipes.push(recipe("docs-link-check", "check", "# manual: review Markdown links", dir, "low", "markdown files present", false));
-    recipes.push(recipe("docs-word-count", "check", "# manual: review Markdown word count", dir, "low", "markdown files present", false));
-  }
-
-  // JSON/YAML data validation
-  const dataFiles = files.filter((f) => /\.(json|yaml|yml)$/.test(f));
-  if (dataFiles.length) {
-    recipes.push(recipe("data-validate", "check", "# manual: validate data/config files", dir, "low", "data files present", false));
-  }
-
-  // Design assets
-  const imageFiles = topFiles.filter((f) => /\.(png|jpg|jpeg|svg|fig|sketch)$/.test(f));
-  if (imageFiles.length) {
-    recipes.push(recipe("assets-list", "check", "find . -maxdepth 1 -type f \( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.svg' \) | sort", dir, "medium", "image assets present", true));
-  }
-
-  return recipes;
-}
-
-function nodeRecipes(dir) {
-  const pkg = readJson(path.join(dir, "package.json"));
-  const scripts = pkg.scripts || {};
-  const pm = detectPackageManager(dir);
-  const recipes = [];
-  const purposeByScript = [
-    ["test", "test"],
-    ["test:unit", "test"],
-    ["test:e2e", "e2e"],
-    ["typecheck", "typecheck"],
-    ["type-check", "typecheck"],
-    ["lint", "lint"],
-    ["build", "build"],
-    ["generate", "generate"],
-    ["codegen", "generate"],
-    ["format:check", "format-check"],
-  ];
-  for (const [script, purpose] of purposeByScript) {
-    if (scripts[script]) {
-      recipes.push(recipe(scriptId(purpose, script), purpose, `${pm} run ${script}`, dir, "high", `package.json scripts.${script}`));
-    }
-  }
-  return recipes;
-}
-
-function pythonRecipes(dir) {
-  const runner = exists(dir, "uv.lock") ? "uv run" : "python -m";
-  const recipes = [
-    recipe("test", "test", `${runner} pytest`, dir, "medium", "python convention"),
-  ];
-  if (textIncludes(dir, "pyproject.toml", "ruff")) recipes.push(recipe("lint", "lint", "ruff check .", dir, "medium", "pyproject.toml"));
-  if (textIncludes(dir, "pyproject.toml", "mypy")) recipes.push(recipe("typecheck", "typecheck", "mypy .", dir, "medium", "pyproject.toml"));
-  return recipes;
-}
-
-function goRecipes(dir) {
-  return [
-    recipe("test", "test", "go test ./...", dir, "high", "go.mod"),
-    recipe("vet", "lint", "go vet ./...", dir, "medium", "go.mod"),
-  ];
-}
-
-function mavenRecipes(dir) {
-  return [
-    recipe("test", "test", "mvn test", dir, "high", "pom.xml"),
-    recipe("build", "build", "mvn package", dir, "medium", "pom.xml"),
-  ];
-}
-
-function gradleRecipes(dir) {
-  const gradle = exists(dir, "gradlew") ? "./gradlew" : "gradle";
-  return [
-    recipe("test", "test", `${gradle} test`, dir, "high", "build.gradle"),
-    recipe("build", "build", `${gradle} build`, dir, "medium", "build.gradle"),
-  ];
-}
-
-function rustRecipes(dir) {
-  return [
-    recipe("test", "test", "cargo test", dir, "high", "Cargo.toml"),
-    recipe("check", "typecheck", "cargo check", dir, "high", "Cargo.toml"),
-    recipe("lint", "lint", "cargo clippy", dir, "medium", "Cargo.toml"),
-  ];
-}
-
-function recipe(id, purpose, command, cwd, confidence, source, executable = true) {
-  return { id, purpose, command, cwd: rel(cwd), confidence, source, executable };
-}
-
-function scriptId(purpose, script) {
-  return purpose === script ? purpose : `${purpose}:${script.replace(/[^a-z0-9]+/gi, "-")}`;
-}
-
-function detectPackageManager(dir) {
-  if (exists(dir, "pnpm-lock.yaml")) return "pnpm";
-  if (exists(dir, "yarn.lock")) return "yarn";
-  if (exists(dir, "bun.lockb") || exists(dir, "bun.lock")) return "bun";
-  return "npm";
-}
-
-function listFiles(rootDir, limit) {
-  const output = [];
-  if (!fs.existsSync(rootDir)) return output;
-  walk(rootDir, "");
-  return output;
-
-  function walk(abs, prefix) {
-    if (output.length >= limit) return;
-    let entries = [];
-    try {
-      entries = fs.readdirSync(abs, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (output.length >= limit) return;
-      if (skip(entry.name)) continue;
-      const childPrefix = prefix ? `${prefix}/${entry.name}` : entry.name;
-      const childAbs = path.join(abs, entry.name);
-      if (entry.isDirectory()) walk(childAbs, childPrefix);
-      else output.push(childPrefix);
-    }
-  }
-}
-
-function listTopLevelFiles(rootDir, limit) {
-  const output = [];
-  if (!fs.existsSync(rootDir)) return output;
-  try {
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      if (output.length >= limit) break;
-      if (entry.name.startsWith(".")) continue;
-      if (entry.isDirectory()) continue;
-      output.push(entry.name);
-    }
-  } catch {
-    return [];
-  }
-  return output;
-}
-
-function skip(name) {
-  return name.startsWith(".") ||
-    ["node_modules", "dist", "build", ".next", "coverage", "target", "vendor", "__pycache__"].includes(name) ||
-    /\.(lock|log|png|jpg|jpeg|gif|webp|pdf|zip|gz|tar|mp4|mov)$/.test(name);
-}
-
-function exists(dir, file) {
-  return fs.existsSync(path.join(dir, file));
+function parseLimit(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function readJson(file) {
@@ -267,12 +212,16 @@ function readJson(file) {
   }
 }
 
-function textIncludes(dir, file, needle) {
+function readMaybe(file) {
   try {
-    return fs.readFileSync(path.join(dir, file), "utf8").includes(needle);
+    return fs.readFileSync(file, "utf8");
   } catch {
-    return false;
+    return "";
   }
+}
+
+function slug(value) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 function rel(file) {
@@ -280,23 +229,36 @@ function rel(file) {
 }
 
 function toMarkdown(data) {
-  const lines = ["# Executable Recipes", ""];
-  if (!data.projects.length) {
-    lines.push(`No workspace directories found under \`${data.root}\`.`, "");
-    lines.push("You can:", "- Copy existing work into `projects/{workspace}/` and rerun this command.", "- Start from an empty workspace; AI will infer minimal validation actions per task.");
+  const lines = ["# AI Native Recipes", "", `生成时间：${data.generatedAt}`, ""];
+  if (!data.workspaces.length) {
+    lines.push(`\`${data.root}\` 下没有工作单元。`, "");
     return lines.join("\n");
   }
-  for (const project of data.projects) {
-    lines.push(`## ${project.name}`, "", `- Path: \`${project.path}\``, `- Kind: \`${project.kind}\``, "");
-    if (!project.recipes.length) {
-      lines.push("No recipes detected.", "");
-      continue;
-    }
-    lines.push("| ID | Purpose | Command | CWD | Confidence | Source | Executable |", "|----|---------|---------|-----|------------|--------|------------|");
-    for (const item of project.recipes) {
-      lines.push(`| \`${item.id}\` | ${item.purpose} | \`${item.command}\` | \`${item.cwd}\` | ${item.confidence} | ${item.source} | ${item.executable ? "yes" : "no"} |`);
+  for (const workspace of data.workspaces) {
+    lines.push(
+      `## ${workspace.name}`,
+      "",
+      `- 路径：\`${workspace.path}\``,
+      `- 已扫描文件：${workspace.scan.filesScanned}`,
+      `- 扫描上限：${workspace.scan.scanLimit}`,
+      `- 结果截断：${workspace.scan.truncated ? "是，以下动作可能不完整" : "否"}`,
+      "",
+      "| ID | 类型 | 用途 | 动作 | 来源 | 置信度 |",
+      "|----|------|------|------|------|--------|"
+    );
+    for (const action of workspace.actions) {
+      const detail = action.type === "command" ? `\`${formatCommand(action)}\`` : action.instruction;
+      lines.push(`| \`${escapeCell(action.id)}\` | ${action.type} | ${action.purpose} | ${escapeCell(detail)} | ${escapeCell(action.source)} | ${action.confidence} |`);
     }
     lines.push("");
   }
   return lines.join("\n");
+}
+
+function formatCommand(action) {
+  return [action.executable, ...action.args.map((arg) => JSON.stringify(arg))].join(" ");
+}
+
+function escapeCell(value) {
+  return String(value).replace(/\|/g, "\\|");
 }

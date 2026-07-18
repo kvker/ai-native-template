@@ -4,7 +4,7 @@
 
 AI 在任意对话过程中持续感知用户是否正在“纠错、约束、提升”AI 的工作方式。若满足长期沉淀条件，应写入 `conventions/memories/` 中对应功能主题文件；若同名主题已存在，则追加到该文件。
 
-该机制属于对话层常驻行为，不属于 `raw-input → requirements → design → tech-spec → implementation → testing → deployment` 协作流程的一部分，也不要求为每次沉淀创建 artifact。
+该机制属于对话层常驻行为，不属于 `raw → requirements → design → spec → execution → review → archive` 协作流程的一部分，也不要求为每次沉淀创建 Artifact。
 
 ## 触发时机
 
@@ -65,4 +65,4 @@ AI 在对话中发现候选长期记忆时，应按以下顺序处理：
 
 ## 自动读取
 
-根 `AGENTS.md` 只存路由。AI 开始任意对话或任务时应按需读取本规则；在对话过程中持续应用，而不是等到协作流程结束才执行。
+根 `AGENTS.md` 以路由和必要约束为主。AI 开始任意对话或任务时应按需读取本规则；在对话过程中持续应用，而不是等到协作流程结束才执行。

@@ -17,7 +17,7 @@
 | [background](background/) | 静态背景知识 | 只读，了解领域知识 |
 | [conventions](conventions/) | 上下文约定规范、对话长期规则与优化记录 | 开始任务前按需读取；对话过程中自动感知并按需写入 |
 | [artifacts](artifacts/) | 任务产出目录 | 频繁读写，跟踪任务产出 |
-| [projects](projects/) | 实际工作区 / 交付物根目录 | 实现阶段才访问，每个子目录为一个独立工作单元 |
+| [projects](projects/) | 实际工作区 / 交付物根目录 | 按任务需要读取和写入，每个子目录为一个独立工作单元 |
 | [skills](skills/) | 初始化后安装的运行期技能暂存目录 | 模板阶段不作为激活技能读取；`/an-init` 完成后移动到 `.agents/skills/` 并删除 |
 | [.agents/skills/an-init](.agents/skills/an-init/) | 模板初始化技能 | 模板阶段唯一激活技能 |
 
@@ -25,7 +25,7 @@
 
 ## 约定
 
-索引文件只存放路由，不存放内容：`[name](path/to/file)`
+索引文件以路由和必要约束为主，不复制具体文档正文：`[name](path/to/file)`
 
 ## AI 行为约束
 
@@ -49,7 +49,7 @@
 
 ## 当前活跃 Artifacts
 
-任务过程中按需创建，每个任务在 `artifacts/{feature}/` 下独立管理。
+任务过程中按需创建，每个任务在 `artifacts/{YYYYMMDD}__{task-name}/` 下独立管理。
 
 | Artifact | 描述 | 状态 |
 |----------|------|------|
@@ -64,5 +64,5 @@
 | 将大任务拆分为多个子任务 | `/an-task-split` |
 | 探测可执行动作/验证动作 | `/an-recipes` |
 | 根据 workspace 现状刷新背景知识 | `/an-refresh` |
-| 评价任务完成质量 | `/an-eval` |
+| 检查任务完成质量 | `/an-review` |
 | 归档已完成任务产出 | `/an-archive` |

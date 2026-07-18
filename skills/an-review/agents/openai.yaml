@@ -1,0 +1,4 @@
+interface:
+  display_name: "任务 Review"
+  short_description: "检查实际产出并判断任务是否达到完成标准"
+  default_prompt: "使用 $an-review 按完成标准检查实际产出、记录证据并给出 PASS、REVIEW 或 BLOCKED 结论。"

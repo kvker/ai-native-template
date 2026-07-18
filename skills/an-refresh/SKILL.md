@@ -1,194 +1,63 @@
 ---
 name: an-refresh
-description: 根据实际工作区内容和结果反向更新 background 背景知识库。当用户想要：1) 刷新/更新 background 文档 2) 工作区已变但文档未同步 3) 执行 /an-refresh 命令 4) 提到"更新背景"、"刷新背景"、"同步文档"、"反推文档"等关键词时触发此技能。
+description: 根据 projects 中的实际材料和已归档任务反向更新 background 与工作区结构说明。工作区内容变化、背景文档过时或用户要求刷新上下文时使用。
 ---
 
-# 刷新背景知识库
+# 刷新背景知识
 
-根据 `projects/` 中的实际工作区和 `artifacts/` 中的已完成工作，反向更新 `background/` 文档。
+根据工作区事实增量更新上下文，不预设工作类型，不把任务过程直接写成长期背景。
 
-**核心理念**：先有结果，后有文档。当工作区先行落地，背景知识需要跟上。
+## 流程
 
----
-
-## 触发条件
-
-满足任一即可触发：
-
-| 场景 | 示例 |
-|------|------|
-| 显式调用 | 用户执行 `/an-refresh` |
-| 文档过时 | 工作区已变更但 background 未同步 |
-| 里程碑后 | 完成一个重要任务后需要更新背景 |
-| 定期刷新 | 用户主动要求检查并更新 |
-
----
-
-## 执行流程
-
-```
-扫描 → 差异确认 → 更新 → 确认
+```text
+扫描 → 比较 → 更新 → 报告
 ```
 
-### 阶段一：scan（扫描现状）
-
-**目标**：扫描工作区和文档，识别不一致。
-
-**行为**：
-
-优先运行结构化扫描脚本：
+## 扫描
 
 ```bash
 node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
 ```
 
-需要给后续处理保存 JSON 时：
+需要保存结构化结果时：
 
 ```bash
-node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --write artifacts/background-scan.json
+node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --write .agents/background-scan.json
 ```
 
-1. 读取 `background/` 下所有文档，了解当前记录的状态
-2. 扫描 `projects/` 目录，提取实际信息：
-   - 能力/工具栈版本和工具链信息
-   - 目录结构变化（新增/删除的模块）
-   - 新增的对外入口、交互边界、数据结构
-   - 配置变更
-3. 扫描已完成的 `artifacts/` 任务，提取隐含的背景信息：
-   - 已交付的能力/内容（更新 features 状态）
-   - 已做出的架构/结构决策
-   - 已解决的领域问题
+扫描内容包括：
 
-自动抽取重点：
+- 工作单元、目录、文件类型和主要材料变化
+- README、索引、配置和已有说明中明确表达的用途
+- 声明的工具、脚本和可复用动作
+- 已归档任务的 Review 结论和完结摘要
+- 现有 background 与实际材料之间的差异
 
-| 来源 | 抽取内容 | 更新目标 |
-|------|----------|---------|
-| 特征文件、依赖和配置 | 能力/工具栈、版本、脚本、依赖 | `background/tech/stack.md` |
-| 对外入口和交互边界 | 功能入口、协议、集成点、交付格式 | `background/features.md`、`background/domains.md` |
-| 数据结构和持久化变更 | 数据模型和领域对象 | `background/domains.md` |
-| 验证报告、质量评价报告 | 验证证据和质量状态 | `background/features.md` |
-| `.agents/recipes.json` | 验证、构建、生成、检查动作 | `conventions/style-guide.md` 或 `background/tech/stack.md` |
+扫描结果标记 `truncated: true` 时，只能作为部分清单使用；必须扩大扫描范围或针对目标材料继续检查，不能据此断言工作区不存在其他内容。
 
-**产出物**：向用户展示扫描发现，格式如下：
+## 更新
 
-```text
-📋 扫描结果
+1. 读取 `background/` 和相关 `conventions/` 文档。
+2. 将扫描结果与现有记录比较，只更新有事实依据的变化。
+3. 明显事实变化可直接更新；涉及主题定位、业务含义或用户意图且证据不足时标记待确认。
+4. 保留仍有效的人工内容，不整篇重写，不因材料暂时缺失而直接删除背景记录。
+5. 更新后报告变更、来源、未变更项和待确认项。
 
-已检查的 background 文档：
-- background/product/overview.md
-- background/tech/stack.md
-- ...
+## 默认更新目标
 
-发现的差异：
-1. [stack.md] 工具栈记录与实际不一致
-2. [overview.md] 缺少已交付能力模块
-3. [structure.md] 新增目录未记录
-
-需要新增的文档：
-- background/domains.md（当前不存在，但工作区中已出现明显的领域模型）
-
-无需更新的文档：
-- conventions/style-guide.md（与实际一致）
-```
-
----
-
-### 阶段二：diff（差异确认）
-
-**目标**：与用户确认哪些差异需要更新。
-
-**行为**：
-1. 将扫描发现的差异分类：
-
-| 类别 | 说明 | 默认 |
-|------|------|------|
-| 必须更新 | 版本不匹配、缺失的模块 | 建议更新 |
-| 建议更新 | 可能有用的上下文补充 | 询问用户 |
-| 可选更新 | 细节优化、措辞改进 | 跳过 |
-
-2. 向用户确认更新范围
-
-**检查点**：等待用户确认哪些差异需要更新。
-
----
-
-### 阶段三：update（执行更新）
-
-**目标**：按确认的范围更新 background 文档。
-
-**行为**：
-1. 对每个确认的更新项，修改对应的 background 文档
-2. 如果需要新增文档，按 `an-init` 中定义的格式创建
-3. 保持文档风格与现有 background 一致
-4. 在文档末尾附加更新日志：
-
-```markdown
-## 更新记录
-
-| 日期 | 更新内容 | 触发来源 |
-|------|---------|---------|
-| YYYY-MM-DD | {变更摘要} | {an-refresh / 用户指令} |
-```
-
-**产出物**：更新后的 `background/` 文档。
-
----
-
-### 阶段四：confirm（确认完成）
-
-**目标**：展示更新结果，确保一致性。
-
-**行为**：
-1. 展示更新摘要：
-
-```text
-✅ 背景知识库已刷新
-
-更新文件：
-- background/tech/stack.md（更新工具栈和依赖摘要）
-- background/product/overview.md（补充能力模块描述）
-
-新增文件：
-- background/domains.md（从工作区中提取领域模型）
-
-未变更：
-- conventions/style-guide.md
-```
-
-2. 提醒用户是否需要同步更新 `conventions/` 下的规范文件
-
----
-
-## 支持的更新范围
-
-| 范围 | 说明 | 涉及文件 |
-|------|------|---------|
-| tech | 能力/工具栈、依赖版本、工具链 | `background/tech/stack.md` |
-| product | 主题/产品能力、模块描述 | `background/product/overview.md` |
-| domains | 领域模型、业务规则 | `background/domains.md` |
-| structure | 工作区结构规范 | `conventions/structure.md` |
-| style | 风格规范 | `conventions/style-guide.md` |
-| features | 交付状态追踪 | `background/features.md` |
-| all | 全部检查 | 以上所有 |
-
-用户可通过参数指定范围：`/an-refresh tech` 只刷新工具栈相关。
-
----
-
-## 增量更新原则
-
-1. **只更新变化的部分**，不重写整个文件
-2. **保留人工补充的内容**，不覆盖用户的自定义描述
-3. **标记不确定项**，无法从工作区确认的信息标记为 `⚠️ 待确认`
-4. **不删除文档**，即使工作区中已移除某能力，仅在文档中标注废弃而非删除
-
----
-
-## 错误处理
-
-| 情况 | 处理 |
+| 内容 | 目标 |
 |------|------|
-| background/ 为空 | 提示用户先执行 `/an-init` |
-| projects/ 工作区无法解析 | 跳过自动分析，提示用户手动提供信息 |
-| 文档与工作区冲突 | 以工作区为准，但标记差异让用户确认 |
-| 用户只想部分更新 | 按指定范围执行，跳过其他 |
+| 工作区定位和主要材料 | `background/overview.md` |
+| 工作单元内容、关系和可用动作 | `background/workspaces.md` |
+| 目录与组织方式 | `conventions/structure.md` |
+| 命名、格式和标注约定 | `conventions/style-guide.md` |
+| 稳定领域事实 | 已存在的相关 background 文档 |
+
+只有事实足以支撑且有长期复用价值时才新增背景文档。不要固定要求 `product`、`tech`、`domains` 或 `features` 等行业相关文件。
+
+## 约束
+
+- `projects/` 和用户明确输入是事实来源；冲突时报告差异。
+- Artifact 只有归档且 Review 结论可接受时，才能作为背景更新线索。
+- 一次性执行细节、临时问题和未确认推断不进入稳定背景。
+- 扫描脚本无法识别语义时，由 AI 阅读实际材料补充，不把文件名当成业务事实。

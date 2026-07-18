@@ -4,325 +4,241 @@ import path from "node:path";
 
 const args = parseArgs(process.argv.slice(2));
 const root = path.resolve(args.root || "projects");
-const artifactsRoot = path.resolve(args.artifacts || "artifacts");
+const artifacts = path.resolve(args.artifacts || "artifacts");
 const format = args.format || (args.write ? "json" : "markdown");
-
+const scanLimit = parseLimit(args.limit, 1000);
 const summary = {
-  schemaVersion: 1,
+  schemaVersion: 3,
+  generatedAt: new Date().toISOString(),
   root: rel(root),
-  projects: scanProjects(root),
-  artifactsTesting: scanArtifactsTesting(artifactsRoot),
+  workspaces: scanWorkspaces(root, scanLimit),
+  archivedReviews: scanArchivedReviews(path.join(artifacts, "_archived")),
 };
-
 const output = format === "json" ? JSON.stringify(summary, null, 2) : toMarkdown(summary);
+
 if (args.write) {
-  const out = path.resolve(args.write);
-  fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, `${output}\n`);
+  const target = path.resolve(args.write);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${output}\n`);
 } else {
   process.stdout.write(`${output}\n`);
 }
 
+function scanWorkspaces(rootDir, limit) {
+  if (!fs.existsSync(rootDir)) return [];
+  return fs.readdirSync(rootDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
+    .map((entry) => scanWorkspace(path.join(rootDir, entry.name), entry.name, limit));
+}
+
+function scanWorkspace(dir, name, limit) {
+  const inventory = collectInventory(dir, limit);
+  const topLevel = topLevelEntries(dir, 40);
+  return {
+    name,
+    path: rel(dir),
+    scan: {
+      entriesScanned: inventory.files.length + inventory.directories.length,
+      scanLimit: inventory.limit,
+      truncated: inventory.truncated,
+    },
+    fileCount: inventory.files.length,
+    directoryCount: inventory.directories.length,
+    topLevelEntries: topLevel.entries,
+    topLevelTruncated: topLevel.truncated,
+    fileTypes: countFileTypes(inventory.files),
+    materialGroups: detectMaterialGroups(inventory.files),
+    declaredActions: detectDeclaredActions(dir),
+    readmeFiles: inventory.files.filter((file) => /(^|\/)readme(?:\.[^/]+)?$/i.test(file)).slice(0, 20),
+  };
+}
+
+function collectInventory(rootDir, limit) {
+  const files = [];
+  const directories = [];
+  let truncated = false;
+  walk(rootDir, "");
+  return { files, directories, limit, truncated };
+
+  function walk(dir, prefix) {
+    if (files.length + directories.length >= limit) {
+      truncated = true;
+      return;
+    }
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (files.length + directories.length >= limit) {
+        truncated = true;
+        return;
+      }
+      if (shouldSkip(entry.name)) continue;
+      const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
+      if (entry.isDirectory()) {
+        directories.push(relative);
+        walk(path.join(dir, entry.name), relative);
+      } else {
+        files.push(relative);
+      }
+    }
+  }
+}
+
+function topLevelEntries(dir, limit) {
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true }).filter((entry) => !entry.name.startsWith("."));
+    return {
+      entries: entries.slice(0, limit).map((entry) => ({ name: entry.name, type: entry.isDirectory() ? "directory" : "file" })),
+      truncated: entries.length > limit,
+    };
+  } catch {
+    return { entries: [], truncated: false };
+  }
+}
+
+function countFileTypes(files) {
+  const counts = {};
+  for (const file of files) {
+    const extension = path.extname(file).toLowerCase() || "[no-extension]";
+    counts[extension] = (counts[extension] || 0) + 1;
+  }
+  return Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 15)
+    .map(([extension, count]) => ({ extension, count }));
+}
+
+function detectMaterialGroups(files) {
+  const groups = [];
+  const definitions = [
+    ["text", /\.(md|mdx|txt|rst)$/i],
+    ["document", /\.(doc|docx|odt|pdf)$/i],
+    ["presentation", /\.(ppt|pptx|odp)$/i],
+    ["spreadsheet", /\.(xls|xlsx|ods)$/i],
+    ["structured-data", /\.(json|ya?ml|csv|tsv|xml)$/i],
+    ["visual", /\.(png|jpe?g|gif|webp|svg|fig|sketch)$/i],
+    ["audio-video", /\.(mp3|wav|m4a|mp4|mov|webm)$/i],
+    ["source", /\.(js|jsx|ts|tsx|py|go|rs|java|rb|php|c|cc|cpp|h|cs|swift|kt)$/i],
+  ];
+  for (const [name, pattern] of definitions) {
+    const count = files.filter((file) => pattern.test(file)).length;
+    if (count) groups.push({ name, count });
+  }
+  return groups;
+}
+
+function detectDeclaredActions(dir) {
+  const packageFile = path.join(dir, "package.json");
+  if (!fs.existsSync(packageFile)) return [];
+  try {
+    const pkg = JSON.parse(fs.readFileSync(packageFile, "utf8"));
+    return Object.keys(pkg.scripts || {}).slice(0, 40);
+  } catch {
+    return [];
+  }
+}
+
+function scanArchivedReviews(archiveDir) {
+  const limit = 100;
+  if (!fs.existsSync(archiveDir)) return { items: [], limit, truncated: false };
+  const reports = [];
+  for (const entry of fs.readdirSync(archiveDir, { withFileTypes: true })) {
+    if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
+    const reportFile = path.join(archiveDir, entry.name, "review", "review-report.md");
+    const summaryFile = path.join(archiveDir, entry.name, "archive", "summary.md");
+    const report = readMaybe(reportFile);
+    reports.push({
+      artifact: entry.name,
+      conclusion: parseConclusion(report) || "MISSING",
+      review: fs.existsSync(reportFile) ? rel(reportFile) : "",
+      summary: fs.existsSync(summaryFile) ? rel(summaryFile) : "",
+    });
+  }
+  return { items: reports.slice(0, limit), limit, truncated: reports.length > limit };
+}
+
+function parseConclusion(text) {
+  const inline = text.match(/(?:^|\n)\s*(?:[-*]\s*)?结论\s*[：:]\s*(PASS|REVIEW|BLOCKED)\b/i);
+  if (inline) return inline[1].toUpperCase();
+  const lines = text.split(/\r?\n/);
+  const heading = lines.findIndex((line) => /^#{1,6}\s+结论\s*$/.test(line.trim()));
+  if (heading < 0) return "";
+  for (const line of lines.slice(heading + 1)) {
+    const value = line.trim();
+    if (!value) continue;
+    const match = value.match(/^(PASS|REVIEW|BLOCKED)\b/i);
+    return match ? match[1].toUpperCase() : "";
+  }
+  return "";
+}
+
+function shouldSkip(name) {
+  return name.startsWith(".") || ["node_modules", "dist", "build", "coverage", "target", "vendor", "__pycache__"].includes(name);
+}
+
 function parseArgs(argv) {
   const parsed = {};
-  for (let i = 0; i < argv.length; i += 1) {
-    const item = argv[i];
+  for (let index = 0; index < argv.length; index += 1) {
+    const item = argv[index];
     if (!item.startsWith("--")) continue;
     const key = item.slice(2);
-    const next = argv[i + 1];
+    const next = argv[index + 1];
     if (!next || next.startsWith("--")) parsed[key] = true;
     else {
       parsed[key] = next;
-      i += 1;
+      index += 1;
     }
   }
   return parsed;
 }
 
-function scanProjects(rootDir) {
-  if (!fs.existsSync(rootDir)) return [];
-  return fs
-    .readdirSync(rootDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
-    .map((entry) => scanProject(path.join(rootDir, entry.name), entry.name));
+function parseLimit(value, fallback) {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-function scanProject(dir, name) {
-  const files = listFiles(dir, 800);
-  const packageInfo = readPackageInfo(dir);
-  const isCodeWorkspace = !!packageInfo || exists(dir, "go.mod") || exists(dir, "pyproject.toml") || exists(dir, "requirements.txt") || exists(dir, "pom.xml") || exists(dir, "build.gradle") || exists(dir, "build.gradle.kts") || exists(dir, "Cargo.toml");
-  return {
-    name,
-    path: rel(dir),
-    kind: isCodeWorkspace ? detectCodeKind(dir) : detectGeneralKind(dir, files),
-    package: packageInfo,
-    routes: isCodeWorkspace ? detectRoutes(dir, files) : [],
-    apis: isCodeWorkspace ? detectApis(dir, files) : [],
-    schemas: isCodeWorkspace ? detectSchemas(dir, files) : [],
-    tests: isCodeWorkspace ? detectTests(files) : { testFileCount: 0, examples: [] },
-    fileTypes: detectFileTypes(files),
-    topLevelFiles: files.slice(0, 20),
-  };
-}
-
-function detectCodeKind(dir) {
-  if (exists(dir, "package.json")) {
-    const pkg = readJson(path.join(dir, "package.json"));
-    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-    if (deps.next) return "nextjs";
-    if (deps.react) return "react";
-    if (deps.vue) return "vue";
-    if (deps["@nestjs/core"]) return "nestjs";
-    if (deps.express) return "express";
-    return "node";
-  }
-  if (exists(dir, "pyproject.toml") || exists(dir, "requirements.txt")) return "python";
-  if (exists(dir, "go.mod")) return "go";
-  if (exists(dir, "pom.xml")) return "java-maven";
-  if (exists(dir, "build.gradle") || exists(dir, "build.gradle.kts")) return "java-gradle";
-  if (exists(dir, "Cargo.toml")) return "rust";
-  return "unknown";
-}
-
-function detectGeneralKind(dir, files) {
-  const topFiles = listTopLevelFiles(dir, 100);
-  if (topFiles.some((f) => /\.(md|mdx)$/.test(f)) || files.some((f) => /\.(md|mdx)$/.test(f))) return "markdown-docs";
-  if (topFiles.some((f) => /\.(json|yaml|yml)$/.test(f)) || files.some((f) => /\.(json|yaml|yml)$/.test(f))) return "data-config";
-  if (topFiles.some((f) => /\.(png|jpg|jpeg|svg|fig|sketch)$/.test(f))) return "design-assets";
-  return "generic";
-}
-
-function readPackageInfo(dir) {
-  const pkgPath = path.join(dir, "package.json");
-  if (!fs.existsSync(pkgPath)) return null;
+function readMaybe(file) {
   try {
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-    const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-    return {
-      name: pkg.name || path.basename(dir),
-      version: pkg.version || "",
-      scripts: pkg.scripts || {},
-      dependencies: Object.fromEntries(Object.entries(deps).slice(0, 40)),
-    };
-  } catch {
-    return null;
-  }
-}
-
-function detectFileTypes(files) {
-  const counts = {};
-  for (const file of files) {
-    const ext = path.extname(file).toLowerCase();
-    if (!ext) continue;
-    counts[ext] = (counts[ext] || 0) + 1;
-  }
-  return Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([ext, count]) => ({ ext, count }));
-}
-
-function detectRoutes(dir, files) {
-  return files
-    .filter((file) => /(^|\/)(pages|app|routes|router|controllers?)(\/|$)/.test(file))
-    .filter((file) => /\.(ts|tsx|js|jsx|py|go|java|rb)$/.test(file) || /route\.(ts|js)$/.test(file))
-    .slice(0, 80)
-    .map((file) => rel(path.join(dir, file)));
-}
-
-function detectApis(dir, files) {
-  const hits = [];
-  const patterns = [
-    { kind: "express", regex: /\b(?:app|router)\.(get|post|put|patch|delete)\(\s*["'`]([^"'`]+)["'`]/gi },
-    { kind: "fastapi", regex: /@(?:app|router)\.(get|post|put|patch|delete)\(\s*["'`]([^"'`]+)["'`]/gi },
-    { kind: "nest", regex: /@(Get|Post|Put|Patch|Delete)\(\s*["'`]?([^"'`)]*)["'`]?\s*\)/g },
-    { kind: "spring", regex: /@(GetMapping|PostMapping|PutMapping|PatchMapping|DeleteMapping|RequestMapping)\(\s*(?:value\s*=\s*)?["'`]([^"'`]+)["'`]/g },
-    { kind: "next-route-handler", regex: /export\s+(?:async\s+)?function\s+(GET|POST|PUT|PATCH|DELETE)\b/g },
-  ];
-  for (const file of files) {
-    if (!/\.(ts|tsx|js|jsx|py|java)$/.test(file)) continue;
-    const text = readSmall(path.join(dir, file));
-    if (!text) continue;
-    for (const pattern of patterns) {
-      for (const match of text.matchAll(pattern.regex)) {
-        hits.push({
-          kind: pattern.kind,
-          method: normalizeMethod(match[1]),
-          path: match[2] || routePathFromFile(file),
-          file: rel(path.join(dir, file)),
-        });
-        if (hits.length >= 120) return hits;
-      }
-    }
-  }
-  return hits;
-}
-
-function detectSchemas(dir, files) {
-  const hits = [];
-  for (const file of files) {
-    const full = path.join(dir, file);
-    if (/schema\.prisma$/.test(file)) {
-      const text = readSmall(full);
-      for (const match of text.matchAll(/^model\s+(\w+)/gm)) hits.push({ kind: "prisma", name: match[1], file: rel(full) });
-      continue;
-    }
-    if (/(schema|model|entity|migration|dto|types?)\.(ts|js|py|java|sql)$/.test(file)) {
-      const text = readSmall(full);
-      if (!text) continue;
-      collectSchema(hits, "zod", /(?:export\s+const\s+)?(\w+)\s*=\s*z\.object\(/g, text, full);
-      collectSchema(hits, "mongoose", /(?:new\s+Schema|mongoose\.Schema)\s*\(/g, text, full);
-      collectSchema(hits, "pydantic", /class\s+(\w+)\(BaseModel\)/g, text, full);
-      collectSchema(hits, "sql", /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)/gi, text, full);
-      collectSchema(hits, "typeorm", /@Entity\(\s*["'`]?([^"'`)]*)/g, text, full);
-      if (hits.length >= 120) return hits;
-    }
-  }
-  return hits;
-}
-
-function collectSchema(hits, kind, regex, text, full) {
-  const matches = [...text.matchAll(regex)];
-  if (!matches.length) return;
-  for (const match of matches.slice(0, 10)) {
-    hits.push({ kind, name: match[1] || "detected", file: rel(full) });
-  }
-}
-
-function detectTests(files) {
-  const testFiles = files.filter((file) => /(\.test\.|\.spec\.|__tests__|\/tests?\/)/.test(file));
-  return {
-    testFileCount: testFiles.length,
-    examples: testFiles.slice(0, 20),
-  };
-}
-
-function scanArtifactsTesting(dir) {
-  if (!fs.existsSync(dir)) return [];
-  const reports = listFiles(dir, 500)
-    .filter((file) => /testing-report\.md$/.test(file))
-    .map((file) => {
-      const full = path.join(dir, file);
-      const text = readSmall(full) || "";
-      return {
-        file: rel(full),
-        commandMentions: (text.match(/`[^`]*(test|lint|build|typecheck|check|pytest|go test|cargo test|mvn test|validate)[^`]*`/gi) || []).length,
-        failureSignals: (text.match(/失败|未通过|❌|failed|failure|error/gi) || []).length,
-      };
-    });
-  return reports.slice(0, 50);
-}
-
-function listFiles(rootDir, limit) {
-  const output = [];
-  walk(rootDir, "");
-  return output;
-
-  function walk(abs, prefix) {
-    if (output.length >= limit) return;
-    let entries = [];
-    try {
-      entries = fs.readdirSync(abs, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (output.length >= limit) return;
-      if (skip(entry.name)) continue;
-      const childPrefix = prefix ? `${prefix}/${entry.name}` : entry.name;
-      const childAbs = path.join(abs, entry.name);
-      if (entry.isDirectory()) walk(childAbs, childPrefix);
-      else output.push(childPrefix);
-    }
-  }
-}
-
-function listTopLevelFiles(rootDir, limit) {
-  const output = [];
-  if (!fs.existsSync(rootDir)) return output;
-  try {
-    for (const entry of fs.readdirSync(rootDir, { withFileTypes: true })) {
-      if (output.length >= limit) break;
-      if (entry.name.startsWith(".")) continue;
-      if (entry.isDirectory()) continue;
-      output.push(entry.name);
-    }
-  } catch {
-    return [];
-  }
-  return output;
-}
-
-function skip(name) {
-  return name.startsWith(".") ||
-    ["node_modules", "dist", "build", ".next", "coverage", "target", "vendor", "__pycache__"].includes(name) ||
-    /\.(lock|log|png|jpg|jpeg|gif|webp|pdf|zip|gz|tar|mp4|mov)$/.test(name);
-}
-
-function exists(dir, file) {
-  return fs.existsSync(path.join(dir, file));
-}
-
-function readJson(file) {
-  try {
-    return JSON.parse(fs.readFileSync(file, "utf8"));
-  } catch {
-    return {};
-  }
-}
-
-function readSmall(file) {
-  try {
-    const stat = fs.statSync(file);
-    if (stat.size > 512 * 1024) return "";
     return fs.readFileSync(file, "utf8");
   } catch {
     return "";
   }
 }
 
-function normalizeMethod(value) {
-  return String(value || "").toUpperCase();
-}
-
-function routePathFromFile(file) {
-  return `/${file.replace(/(^|\/)(app|pages|api)\//g, "").replace(/\/route\.(ts|js)$/, "").replace(/\.(ts|tsx|js|jsx)$/, "")}`;
-}
-
 function rel(file) {
   return path.relative(process.cwd(), file) || ".";
 }
 
-function toMarkdown(summary) {
-  const lines = ["# Background Scan", ""];
-  if (!summary.projects.length) {
-    lines.push(`No workspace directories found under \`${summary.root}\`.`, "");
-    lines.push("You can start from an empty workspace or copy materials into `projects/{workspace}/`.");
-    return lines.join("\n");
+function toMarkdown(data) {
+  const lines = ["# 工作区扫描", "", `生成时间：${data.generatedAt}`, ""];
+  if (!data.workspaces.length) lines.push(`\`${data.root}\` 下没有工作单元。`, "");
+  for (const workspace of data.workspaces) {
+    lines.push(
+      `## ${workspace.name}`,
+      "",
+      `- 路径：\`${workspace.path}\``,
+      `- 文件：${workspace.fileCount}`,
+      `- 目录：${workspace.directoryCount}`,
+      `- 扫描上限：${workspace.scan.scanLimit}`,
+      `- 结果截断：${workspace.scan.truncated ? "是，文件和材料统计不完整" : "否"}`,
+      `- 顶层条目截断：${workspace.topLevelTruncated ? "是" : "否"}`,
+      `- 材料类型：${workspace.materialGroups.map((group) => `${group.name}(${group.count})`).join("、") || "未识别"}`,
+      `- 文件类型：${workspace.fileTypes.map((item) => `${item.extension}(${item.count})`).join("、") || "无"}`,
+      `- 声明动作：${workspace.declaredActions.map((action) => `\`${action}\``).join("、") || "无"}`,
+      `- README：${workspace.readmeFiles.map((file) => `\`${file}\``).join("、") || "无"}`,
+      ""
+    );
   }
-  for (const project of summary.projects) {
-    lines.push(`## ${project.name}`, "", `- Path: \`${project.path}\``, `- Kind: \`${project.kind}\``);
-    if (project.package) {
-      lines.push(`- Package: \`${project.package.name}\``, `- Scripts: ${Object.keys(project.package.scripts).map((name) => `\`${name}\``).join(", ") || "-"}`);
+  if (data.archivedReviews.items.length) {
+    lines.push("## 已归档任务", "", "| Artifact | Review | 完结摘要 |", "|----------|--------|----------|");
+    for (const item of data.archivedReviews.items) {
+      lines.push(`| ${item.artifact} | ${item.conclusion} | ${item.summary ? `\`${item.summary}\`` : "缺失"} |`);
     }
-    if (project.fileTypes.length) {
-      lines.push(`- File types: ${project.fileTypes.map((ft) => `\`${ft.ext}\`(${ft.count})`).join(", ")}`);
-    }
-    lines.push(`- Routes/files: ${project.routes.length}`, `- API endpoints detected: ${project.apis.length}`, `- Schema hints: ${project.schemas.length}`, `- Test files: ${project.tests.testFileCount}`, "");
-    if (project.apis.length) {
-      lines.push("### API Hints", "", "| Kind | Method | Path | File |", "|------|--------|------|------|");
-      for (const api of project.apis.slice(0, 20)) lines.push(`| ${api.kind} | ${api.method} | \`${api.path}\` | \`${api.file}\` |`);
-      lines.push("");
-    }
-    if (project.schemas.length) {
-      lines.push("### Schema Hints", "", "| Kind | Name | File |", "|------|------|------|");
-      for (const schema of project.schemas.slice(0, 20)) lines.push(`| ${schema.kind} | \`${schema.name}\` | \`${schema.file}\` |`);
-      lines.push("");
-    }
-  }
-  if (summary.artifactsTesting.length) {
-    lines.push("## Artifacts Testing Reports", "", "| File | Command Mentions | Failure Signals |", "|------|------------------|-----------------|");
-    for (const report of summary.artifactsTesting) lines.push(`| \`${report.file}\` | ${report.commandMentions} | ${report.failureSignals} |`);
+    if (data.archivedReviews.truncated) lines.push("", `> 归档扫描达到 ${data.archivedReviews.limit} 项上限，结果不完整。`);
     lines.push("");
   }
   return lines.join("\n");

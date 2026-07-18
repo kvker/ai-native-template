@@ -1,4 +1,4 @@
 interface:
-  display_name: "产物归档"
-  short_description: "将已完成的任务产出移动到归档目录"
-  default_prompt: "使用 $an-archive 将已完成的 artifacts 产出目录归档到 artifacts/archive/。"
+  display_name: "任务归档"
+  short_description: "检查 Review 门禁并归档已完结任务"
+  default_prompt: "使用 $an-archive 检查 Review 结论，将满足门禁的 Artifact 归档并同步活跃索引。"

@@ -1,136 +1,83 @@
 ---
 name: an-task-split
-description: 将大任务拆分为多个子任务，每个子任务的 requirements 文档控制在 200 行以内。当用户想要：1) 拆分一个大任务 2) 将任务分解为多个小任务 3) 执行 /an-task-split 命令 4) 提到"任务拆分"、"分解任务"、"大任务"、"拆分"等关键词时触发此技能。
+description: 将过大的 AI Native 任务拆成多个目标清晰、可独立 Review 的子任务，并生成每个子任务的 raw 和 requirements。用户要求拆分、分解或规划大任务时使用。
 ---
 
 # AI Native 任务拆分
 
-将大任务拆分为多个可独立推进的子任务，每个子任务的 requirements 控制在 200 行以内。
-
-## 角色设定
-
-你是该领域的专家，具备丰富的业务/领域经验。你需要以专家视角理解用户任务，识别自然的业务边界和功能边界，做出合理的拆分决策。
-
-## 输入来源
-
-用户可通过以下方式提供 raw-input：
-
-- 直接输入文字描述
-- 引用文件路径（如 `artifacts/xxx/raw-input/task.md`）
-- 引用外部链接（issue、文档等）
-
----
-
-## 流程
-
-```
-raw-input → split-plan
-```
-
----
-
-### 阶段一：raw-input（原始输入）
-
-**目标**：保存用户的原始大任务描述，不做加工。
-
-**行为**：
-1. 创建任务产出目录 `artifacts/{YYYYMMDD}__{feature-name}/`
-2. 将原始输入保存到 `artifacts/{YYYYMMDD}__{feature-name}/raw-input/task.md`
-3. 如果引用了文件，读取并保存副本
-
-**产出物**：
+拆分本身也是一个任务，遵循唯一标准工作流：
 
 ```text
-artifacts/{YYYYMMDD}__{feature-name}/raw-input/
-└── task.md              # 原始输入内容
+raw → requirements → design → spec → execution → review → archive
 ```
 
----
+拆分的目标是形成可独立执行、检查和归档的子任务，而不是按固定行业模块切割。如果原任务已经足够小，应停止拆分并建议直接使用 `/an-task`。
 
-### 阶段二：split-plan（拆分方案）
+## raw
 
-**目标**：以专家视角分析任务，产出拆分方案。
+将原始大任务保存到父 Artifact 的 `raw/task.md`，不改写用户输入。
 
-**前置**：阅读以下文档获取上下文：
-- `background/product/overview.md` — 主题定位
-- `background/domains.md` — 领域模型（如存在）
-- `background/features.md` — 交付状态（如存在）
+## requirements
 
-**行为**：
-1. 深入理解原始任务的全貌和业务目标
-2. 从业务场景、能力模块、方案边界等维度识别自然拆分点
-3. 拆分为多个子任务，确保每个子任务的 requirements 文档不超过 200 行
-4. 明确子任务之间的依赖关系和执行顺序
-5. 产出拆分方案文档
+将整体目标、范围、约束和完成标准保存到 `requirements/requirements.md`。完成标准使用稳定 ID，并至少覆盖：
 
-**产出物**：`artifacts/{YYYYMMDD}__{feature-name}/split-plan.md`
+- 子任务共同覆盖原任务范围。
+- 每个子任务可以独立判断完成状态。
+- 依赖和执行顺序明确。
+- 每份子任务 requirements 不超过 200 行。
+
+## design
+
+从目标边界、产出边界、依赖关系、风险和可独立检查性识别拆分方式，将方案和取舍保存到 `design/design.md`。
+
+默认由 AI 自主选择拆分方案。只有边界依赖关键业务语义、高风险选择或外部授权时才暂停确认。
+
+## spec
+
+将最终拆分定义保存到 `spec/split-plan.md`：
 
 ```markdown
-# {任务名称} 拆分方案
+# 拆分规范
 
-## 任务理解
-{以专家视角，阐述对任务全貌的理解}
+## 子任务
+| 子任务 | 目标 | 核心完成标准 | 依赖 | Artifact |
+|--------|------|--------------|------|----------|
+| ... | ... | ... | ... | ... |
 
-## 拆分依据
-{从哪些维度进行了拆分，为什么选择这些边界}
+## 创建清单
+- [ ] 创建每个子任务的 raw
+- [ ] 创建每个子任务的 requirements
+- [ ] 写入父任务和依赖引用
+- [ ] 更新根活跃 Artifacts 索引
 
-## 拆分概览
-
-| 序号 | 子任务名称 | 核心目标 | 预估行数 | 依赖 |
-|------|-----------|---------|---------|------|
-| 1 | sub-1 | {一句话} | ~N行 | - |
-| 2 | sub-2 | {一句话} | ~N行 | sub-1 |
-
-## 依赖关系
-{子任务之间的依赖拓扑描述}
-
-## 子任务定义
-
-### sub-1: {名称}
-- **目标**: {一句话描述}
-- **核心场景**: {关键业务场景}
-- **关键验收标准**: {最核心的 AC 要点}
-- **预估行数**: ~N行
-- **Artifact**: artifacts/{YYYYMMDD}__{sub-1}/
-
-### sub-2: {名称}
+## 执行顺序
 ...
-
-## 执行顺序建议
-1. sub-1 → 2. sub-2 → ...
 ```
 
-**检查点**：向用户展示拆分方案，等待用户审核确认。用户可能：
-- 确认拆分方案 → 为每个子任务创建独立产出目录，更新 AGENTS.md 索引
-- 要求调整拆分 → 修改 split-plan 后重新确认
-- 选择其中部分子任务先推进 → 仅创建选定子任务的产出目录
+## execution
 
----
+按照 spec 执行拆分：
 
-## Artifact 索引
+1. 为每个子任务创建独立 Artifact。
+2. 写入 `raw/task.md`，保留父任务和拆分规范的引用。
+3. 写入 `requirements/requirements.md`，包含稳定 ID 的完成标准。
+4. 更新根 `AGENTS.md` 的活跃 Artifacts 表。
+5. 将子任务初始状态标记为“待处理”，不要用“进行中”表示尚未启动。
+6. 将实际创建结果记录到父任务的 `execution/summary.md`。
 
-确认拆分方案后，更新项目根 `AGENTS.md` 的活跃 Artifacts 表：
+## review
 
-```markdown
-| Artifact | 描述 | 状态 |
-|----------|------|------|
-| artifacts/{YYYYMMDD}__{feature-name} | {总任务拆分方案} | ✅ 完成 |
-| artifacts/{YYYYMMDD}__{sub-1} | {子任务描述} | 🚧 待启动 |
-| artifacts/{YYYYMMDD}__{sub-2} | {子任务描述} | 🚧 待启动 |
-```
+在父任务的 `review/review-report.md` 中逐项核对：
 
----
+- 每个 spec 中定义的子任务都已创建。
+- raw、requirements、父任务引用和依赖信息完整。
+- 子任务 requirements 没有超过 200 行。
+- 根活跃 Artifacts 索引与实际目录一致。
 
-## 与 an-task 的关系
+结论为 `PASS`、`REVIEW` 或 `BLOCKED`。缺少子任务、要求或索引时不得判定 PASS。
 
-拆分完成后，用户可对每个子任务分别调用 `an-task` 进入标准工作流。拆分方案中的子任务定义可作为 `an-task` 的 raw-input 使用。
+## archive
 
----
+父拆分任务 Review 为 PASS 后，生成 `archive/summary.md` 并归档父 Artifact。子任务保留在活跃列表中，后续分别使用 `/an-task` 推进。
 
-## 错误处理
-
-| 情况 | 处理 |
-|------|------|
-| 用户想修改拆分方案 | 调整 split-plan.md 后重新确认 |
-| 用户只想推进部分子任务 | 仅创建选定子任务的产出目录 |
-| 原始任务本身不大（预估 requirements < 200 行） | 告知用户无需拆分，建议直接使用 an-task |
+Review 为 REVIEW 时只有用户明确接受剩余项后才归档；BLOCKED 不得归档。
