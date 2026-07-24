@@ -57,6 +57,17 @@ artifacts/{YYYYMMDD}__{task-name}/
 5. 不假定工作类型、文件格式、工具或检查方式。先读取实际材料和现有约定。
 6. 用户可随时暂停、回退或修改前序结果；后续阶段必须同步评估并更新。
 
+## L2/L3 背景读取
+
+L2/L3 在提炼需求前，只前置读取以下背景入口：
+
+```text
+background/AGENTS.md
+background/product/overview.md
+```
+
+技术架构、领域模型和功能状态没有固定的单文件路径。读取 `background/AGENTS.md` 后，根据仓库中实际存在的 background 文档选择相关内容。不得假设 `background/` 下存在未列出的文件。
+
 ## raw
 
 将用户提供的原始内容、材料和来源原样保存到 `raw/`，不改写、不补充推断。引用本地材料时优先记录来源路径；只有任务需要独立快照时才复制。
@@ -152,8 +163,9 @@ PASS
 
 1. 在 `archive/summary.md` 记录任务目标、最终产出位置、Review 结论、剩余限制和完结时间。
 2. 将任务状态更新为完成。
-3. 使用 `/an-archive` 将整个 Artifact 移到 `artifacts/_archived/`。
-4. 从根 `AGENTS.md` 的活跃 Artifacts 表移除。
+3. 根据 `background/AGENTS.md` 的路由，更新当前仓库实际存在的功能状态背景文档；如果没有对应文件，记录为待补充，不要创建或引用虚构路径。
+4. 使用 `/an-archive` 将整个 Artifact 移到 `artifacts/_archived/`。
+5. 从根 `AGENTS.md` 的活跃 Artifacts 表移除。
 
 L2/L3 默认推进到归档；用户明确要求暂不归档时保留为已完成状态。
 
