@@ -149,10 +149,11 @@ artifacts/{YYYYMMDD}__{task-name}/
 ```bash
 mkdir -p .agents/skills
 mv .agents/skills/an-init/assets/skills/* .agents/skills/
+for f in .agents/skills/an-*/SKILL.md.txt; do mv "$f" "${f%.txt}"; done
 rm -rf .agents/skills/an-init
 ```
 
-运行期 Skills 暂存在 an-init 的 `assets/skills/` 中；由于 OpenCode 的发现机制会递归匹配，它们在模板阶段同样可见，但约定上初始化完成前不使用。初始化完成后将运行期 Skills 移入 `.agents/skills/`，并删除 an-init 自身（含已清空的 assets）。
+运行期 Skills 以 `SKILL.md.txt` 暂存在 an-init 的 `assets/skills/` 中，模板阶段不会被技能发现机制识别，避免未初始化时被被动触发。初始化完成后将运行期 Skills 移入 `.agents/skills/`、恢复 `SKILL.md` 文件名，并删除 an-init 自身（含已清空的 assets）。
 
 ## 五、清理模板文件
 

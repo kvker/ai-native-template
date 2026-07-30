@@ -21,7 +21,7 @@
 
 3. 初始化会分析工作单元、生成背景与约定、探测可用动作，并安装运行期 Skills。
 
-模板阶段入口是 `/an-init`；其他运行期 Skills 暂存在 `.agents/skills/an-init/assets/skills/`（模板阶段虽可被 AI 发现，但约定不使用），初始化完成后移动到 `.agents/skills/` 并删除 an-init 自身。
+模板阶段入口是 `/an-init`；其他运行期 Skills 以 `SKILL.md.txt` 暂存在 `.agents/skills/an-init/assets/skills/`（模板阶段不可见），初始化完成后恢复文件名、移动到 `.agents/skills/` 并删除 an-init 自身。
 
 ## 目录结构
 
