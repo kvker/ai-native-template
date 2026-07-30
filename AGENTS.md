@@ -18,8 +18,7 @@
 | [conventions](conventions/) | 上下文约定规范、对话长期规则与优化记录 | 开始任务前按需读取；对话过程中自动感知并按需写入 |
 | [artifacts](artifacts/) | 任务产出目录 | 频繁读写，跟踪任务产出 |
 | [projects](projects/) | 实际工作区 / 交付物根目录 | 按任务需要读取和写入，每个子目录为一个独立工作单元 |
-| [skills](skills/) | 初始化后安装的运行期技能暂存目录 | 模板阶段不作为激活技能读取；`/an-init` 完成后移动到 `.agents/skills/` 并删除 |
-| [.agents/skills/an-init](.agents/skills/an-init/) | 模板初始化技能 | 模板阶段唯一激活技能 |
+| [.agents/skills/an-init](.agents/skills/an-init/) | 模板初始化技能，运行期技能暂存在其 `assets/skills/` 中 | 模板阶段的入口技能；运行期技能模板阶段虽可被发现但约定不使用，`/an-init` 完成后移入 `.agents/skills/`，an-init 自身删除 |
 
 > `projects/` 在本模板中被视为**工作区根目录**，子目录可以是代码工程、文档集、数据集、设计稿目录或任何需要被 AI 理解和操作的交付物集合。
 

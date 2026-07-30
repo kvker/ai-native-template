@@ -33,8 +33,8 @@ description: 将一个或多个已有工作单元或空模板初始化为领域�
 优先并行运行：
 
 ```bash
-node skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
-node skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
+node .agents/skills/an-init/assets/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
+node .agents/skills/an-init/assets/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
 ```
 
 所有结论必须来自用户输入或工作区事实。可以基于证据归纳，但必须标注来源；置信度不足时写“待确认”，不得根据目录名编造工作内容。
@@ -148,11 +148,11 @@ artifacts/{YYYYMMDD}__{task-name}/
 
 ```bash
 mkdir -p .agents/skills
-mv skills/* .agents/skills/
-rmdir skills
+mv .agents/skills/an-init/assets/skills/* .agents/skills/
+rm -rf .agents/skills/an-init
 ```
 
-模板阶段只有 `.agents/skills/an-init/` 激活。初始化完成后移动 `skills/` 中的运行期 Skills，并删除空暂存目录。
+运行期 Skills 暂存在 an-init 的 `assets/skills/` 中；由于 OpenCode 的发现机制会递归匹配，它们在模板阶段同样可见，但约定上初始化完成前不使用。初始化完成后将运行期 Skills 移入 `.agents/skills/`，并删除 an-init 自身（含已清空的 assets）。
 
 ## 五、清理模板文件
 
@@ -166,7 +166,7 @@ rmdir skills
 
 ## 完成报告
 
-报告识别到的工作单元、生成或更新的文件、动作探测结果、待确认事项和下一步。空工作区只生成最小上下文，并说明后续可将材料放入 `projects/` 后重新运行 `/an-init` 或 `/an-refresh`。
+报告识别到的工作单元、生成或更新的文件、动作探测结果、待确认事项和下一步。空工作区只生成最小上下文，并说明 an-init 初始化后会自删，后续可将材料放入 `projects/` 后运行 `/an-refresh` 刷新上下文。
 
 ## 错误处理
 
