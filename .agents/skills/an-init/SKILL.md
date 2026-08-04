@@ -1,179 +1,150 @@
 ---
 name: an-init
-description: 将一个或多个已有工作单元或空模板初始化为领域无关的 AI Native 上下文工作区。分析 projects 中的实际材料，生成 background、conventions、recipes 和路由，并安装运行期 Skills。始终使用中文与用户沟通。
+description: 将已有工作单元或空模板初始化为领域无关的 AI Native 上下文工作区。分析 projects 中的材料，生成 background、conventions、recipes 和运行期路由，并安全安装运行期 Skills。始终使用中文与用户沟通。
 ---
 
 # AI Native 上下文初始化
 
-将 `projects/` 中的材料纳入通用 AI Context 结构。初始化只整理事实和约定，不创建任务 Artifact，不预设工作区所属行业。
+将 `projects/` 中的材料纳入通用 AI Context 结构。初始化只整理事实和约定，不创建任务 Artifact，不预设行业。
 
-## 前置检查
+## 一、前置检查
 
-1. 检查 `projects/` 下的一级子目录，每个子目录视为一个独立工作单元。
-2. 已有材料时直接继续。
-3. 目录为空或不存在时，询问用户是否从空模板开始；确认后生成最小上下文，不因缺少材料报错。
-4. 独立扫描默认可以使用子代理并行执行；环境不支持或用户拒绝时由主代理顺序完成。
+1. 确认当前目录同时包含根 `AGENTS.md`、`artifacts/index.json` 和 `.agents/skills/an-init/SKILL.md`；否则停止，要求从工作区根目录重新执行。
+2. 检查 `projects/` 下一级子目录，每个子目录视为独立工作单元。
+3. `projects/` 为空或不存在时，一次性询问是否从空模板开始；确认后创建目录并生成最小上下文。
+4. 已有材料时直接继续，不要求用户填写能够从材料获得的信息。
+5. 独立工作单元默认可以用子代理并行扫描；环境不支持时由主代理顺序完成。
 
-## 执行流程
+## 二、执行流程
 
 ```text
-工作区扫描 → 事实整理 → 上下文生成 → 动作探测 → 安装 Skills → 清理模板文件
+工作区扫描 → 事实整理 → 上下文生成 → 动作探测 → 安装前检查 → 安装 Skills → 报告并重启
 ```
 
-## 一、工作区扫描
+## 三、工作区扫描
 
-扫描每个工作单元，提取可验证事实：
-
-- 目录、文件类型和主要材料
-- README、索引、说明和已有规范
-- 声明的工具、脚本和可执行动作
-- 对外格式、入口、数据结构或其他明确约定
-- 命名、文件组织和标注风格
-
-优先并行运行：
+从工作区根目录运行：
 
 ```bash
 node .agents/skills/an-init/assets/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
 node .agents/skills/an-init/assets/skills/an-refresh/scripts/scan-projects.mjs --root projects --artifacts artifacts --format markdown
 ```
 
-所有结论必须来自用户输入或工作区事实。可以基于证据归纳，但必须标注来源；置信度不足时写“待确认”，不得根据目录名编造工作内容。
+扫描输出中的 `diagnostics` 非空或 `truncated: true` 时，先针对目标材料补充检查并在报告中说明限制。扫描失败不得解释为“没有内容”。
 
-## 二、事实整理
+扫描后按需阅读 README、索引、配置、注释和已有规范，提取：
 
-AI 应先阅读 README、索引、配置、注释和已有文档，自主形成背景草稿。不要要求用户填写能够从材料中获得的信息。
+- 目录、文件类型和主要材料。
+- 已明确表达的用途、入口和外部约定。
+- 声明的工具、脚本和可执行动作。
+- 命名、文件组织和格式规律。
 
-初始化默认不因业务信息缺失而阻塞。只有缺失信息会影响上下文正确性，且无法从材料判断时，才一次性提出必要问题。其他不确定内容写入“待确认”。
+所有结论必须来自用户输入或工作区事实。可以基于证据归纳，但必须标注来源；置信度不足时写“待确认”，不得用领域常识补成已确认事实。
 
-## 三、上下文生成
+## 四、上下文生成
 
-生成或增量更新以下文件。已有文件时保留仍然有效的人工内容，只修改与事实冲突或已经过时的部分。
+已有文件时保留仍有效的人工内容，只修改与事实冲突或已经过时的部分。
 
 ### 根 AGENTS.md
 
-根入口以路由和必要约束为主，至少包括：
+改写为运行期路由，至少包含：
 
-- 工作区定位和已确认的用途
-- 工作单元列表及来源
-- 模板目录路由
-- AI 行为约束
-- 必读规范
-- 活跃 Artifacts 表
-- Skills 路由
+- 已确认的工作区定位和工作单元路由。
+- 目录职责和敏感文件约束。
+- 必读规范。
+- 指向 `artifacts/index.json` 的任务状态路由。
+- `$an-task`、`$an-task-split`、`$an-recipes`、`$an-refresh`、`$an-review`、`$an-archive` 的运行期 Skill 路由。
 
-根 `AGENTS.md` 的 AI 行为约束必须包含：
+移除原模板阶段说明，但在安装完成前保留以下唯一待完成路由块；所有 `$an-init` 和 `.agents/skills/an-init` 引用都必须放在块内：
+
+```markdown
+<!-- an-init-pending:start -->
+初始化尚未完成时，使用 `$an-init` 继续；入口位于 `.agents/skills/an-init/`。
+<!-- an-init-pending:end -->
+```
+
+根文件不复制活跃任务表或流程正文。安装器在所有运行期 Skill 提交成功后原子移除该块；失败或取消时该入口仍可重试。
+
+根 AI 行为约束必须包含：
 
 ```text
 当任务需要访问某个目录时，先检查该目录及其相关父级路径中的 AGENTS.md（如存在），再读取或修改其中的文件。不要为此主动遍历无关目录。
 ```
 
-标准流程必须写为：
+### README.md
 
-```text
-raw → requirements → design → spec → execution → review → archive
+将模板 README 改写为当前工作区的人类概览，至少说明用途、工作单元、目录、运行期 Skills 和启动方式。必须移除 `<!-- ai-native-template-readme -->` 标记；不要删除用户 README。
+
+### background
+
+生成或更新：
+
+- `background/overview.md`：定位、已知目标、主要材料、待确认和来源。
+- `background/workspaces.md`：每个工作单元的路径、类型、内容、动作和来源。
+- `background/AGENTS.md`：稳定但可刷新、任务默认只读、已确认与待确认分离。
+
+不要创建 `background/product/overview.md` 等行业固定路径。
+
+### conventions
+
+- `conventions/structure.md`：实际目录结构和工作单元职责。
+- `conventions/style-guide.md`：有证据的命名、文件组织、格式和标注约定；没有稳定规律时保持简短。
+- 保留 `workflow.md`、`flow-policy.md`、`document.md`、`principles.md` 和 `rules.md` 的通用机器契约，不把业务事实复制进去。
+
+### artifacts
+
+确认 `artifacts/index.json` 符合：
+
+```json
+{
+  "schemaVersion": 1,
+  "active": []
+}
 ```
 
-### background/overview.md
+初始化不创建任务 Artifact。Artifact 的机器契约统一引用 `conventions/workflow.md`。
 
-```markdown
-# 工作区概述
+### recipes
 
-## 定位
-{基于材料事实归纳；无法确认时标记待确认}
+`.agents/recipes.json` 只记录从实际工作区发现的动作。命令必须有声明依据；无法自动执行的检查使用 inspection，不伪造命令。
 
-## 已知目标
-{仅记录已有材料或用户明确说明的目标}
+## 五、安全安装运行期 Skills
 
-## 主要材料
-{概括 projects 中的工作单元及关系}
-
-## 待确认
-- ...
-
-## 来源
-- ...
-```
-
-### background/workspaces.md
-
-```markdown
-# 工作单元
-
-## {工作单元名称}
-
-- 路径：`projects/{name}`
-- 类型：{按材料事实描述，不套行业分类}
-- 内容：{主要材料和职责}
-- 可用工具/动作：{已发现内容}
-- 来源：{README、配置或具体材料路径}
-```
-
-### conventions/structure.md
-
-记录 `projects/` 的实际目录结构、各工作单元职责和已确认的组织约定。
-
-### conventions/style-guide.md
-
-只记录能从工作区观察到的命名、文件组织、格式和标注约定；没有稳定规律时保持简短并标记待确认。
-
-### background/AGENTS.md
-
-说明 background 保存稳定背景，默认只读；仅 `/an-init`、`/an-refresh` 或用户明确要求时更新。反推信息必须标注来源和不确定性。
-
-### artifacts/AGENTS.md
-
-使用以下通用结构：
-
-```text
-artifacts/{YYYYMMDD}__{task-name}/
-├── AGENTS.md
-├── raw/
-├── requirements/
-├── design/
-├── spec/
-├── execution/
-├── review/
-└── archive/
-```
-
-阶段目录按任务需要创建，不生成空目录。实际交付物写入 `projects/` 或用户指定位置。
-
-### .agents/recipes.json
-
-记录从实际工作区发现的命令和非命令检查动作。无法自动探测的动作由 AI 根据任务和材料选择，不得伪造命令。
-
-## 四、安装运行期 Skills
-
-未并行运行扫描时，先由主代理执行扫描脚本。然后安装 Skills：
+先预检：
 
 ```bash
-mkdir -p .agents/skills
-mv .agents/skills/an-init/assets/skills/* .agents/skills/
-for f in .agents/skills/an-*/SKILL.md.txt; do mv "$f" "${f%.txt}"; done
-rm -rf .agents/skills/an-init
+node .agents/skills/an-init/scripts/install-runtime.mjs --root . --dry-run
 ```
 
-运行期 Skills 以 `SKILL.md.txt` 暂存在 an-init 的 `assets/skills/` 中，模板阶段不会被技能发现机制识别，避免未初始化时被被动触发。初始化完成后将运行期 Skills 移入 `.agents/skills/`、恢复 `SKILL.md` 文件名，并删除 an-init 自身（含已清空的 assets）。
+确认预检列出的 Skills、根路由和 README 均正确后执行：
 
-## 五、清理模板文件
+```bash
+node .agents/skills/an-init/scripts/install-runtime.mjs --root .
+```
 
-初始化完成后删除：
+安装器先复制到 staging 并验证所有 Skill，再提交目标、原子移除待完成路由块，并将 `an-init` 退出发现路径。提交前失败会恢复根 AGENTS、已提交目标和 `an-init`；提交成功后的旧副本清理失败只报告 warning，不回滚已安装 Skills。不要手工执行 `mv ...; rm -rf ...`。
 
-1. 根 `README.md`。
-2. `background/README.md` 和 `artifacts/README.md`（如存在）。
-3. `projects/.gitkeep`（如存在）。
+## 六、完成报告
 
-不要删除 `AGENTS.md`、背景、规范、已有工作材料或任何用户文件。
+报告：
 
-## 完成报告
+- 识别到的工作单元和来源。
+- 生成或更新的文件。
+- 动作探测结果、diagnostics 和截断限制。
+- 待确认事项。
+- 安装结果。
 
-报告识别到的工作单元、生成或更新的文件、动作探测结果、待确认事项和下一步。空工作区只生成最小上下文，并说明 an-init 初始化后会自删，后续可将材料放入 `projects/` 后运行 `/an-refresh` 刷新上下文。
+明确告知用户：OpenCode、Codex 和其他启动时加载 Skill 的客户端必须退出并重启，运行期 Skills 才会生效。不要在当前会话继续调用新安装的 `$an-refresh` 或 `$an-task`。
 
 ## 错误处理
 
 | 情况 | 处理 |
 |------|------|
-| 工作区类型无法判断 | 按材料事实描述，不强行分类 |
-| 扫描脚本失败 | 报告失败并由主代理使用可用工具继续整理 |
-| 部分文件无法读取 | 跳过并记录限制，不阻塞其他工作单元 |
-| 用户取消 | 不安装 Skills，不执行模板清理 |
+| 当前目录不是工作区根 | 停止，不执行扫描、安装或清理 |
+| 空工作区未获确认 | 停止，不安装 Skills |
+| 扫描脚本失败 | 报告失败并用可用工具继续整理；不得把失败记为空结果 |
+| 部分文件无法读取 | 跳过并记录路径和限制 |
+| 安装预检失败 | 修复根路由、README 或目标冲突后重新预检 |
+| 安装提交失败 | 保留待完成路由和 an-init，报告回滚结果后可直接重试 |
+| 旧 an-init 副本清理 warning | 运行期 Skills 已安装；报告残留路径，不反向回滚 |
+| 用户取消 | 不安装 Skills；若已生成运行期文档，保留待完成路由块以便重试 |

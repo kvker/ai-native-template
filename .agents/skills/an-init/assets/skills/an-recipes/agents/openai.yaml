@@ -1,4 +1,4 @@
 interface:
-  display_name: "可执行动作清单"
-  short_description: "探测并维护命令、检查、审阅和预览动作"
-  default_prompt: "使用 $an-recipes 从实际工作区探测命令和非命令检查动作。"
+  display_name: "AI Native 动作清单"
+  short_description: "探测工作区命令与非命令检查动作并生成结构化动作清单"
+  default_prompt: "使用 $an-recipes 从实际工作区探测命令和检查动作，并生成结构化 recipes 清单。"

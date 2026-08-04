@@ -1,10 +1,14 @@
 # 工作流规范
 
+> 本文件是阶段含义、Artifact 状态、Review 结论和归档门禁的最高优先级定义。其他文档可以提供操作示例，但不得增删字段或改变语义；冲突时以本文件为准。
+
 ## 标准工作流
 
+```text
 raw → requirements → design → spec → execution → review → archive
+```
 
-该流程描述任务上下文从原始材料到完结归档的变化，不预设任务所属领域。
+该流程描述任务上下文从原始材料到完结归档的变化，不预设任务所属领域。L0-L3 只控制阶段展开程度和记录量，选择规则见 [flow-policy](flow-policy.md)。
 
 | 阶段 | 通用含义 | 核心问题 |
 |------|----------|----------|
@@ -16,66 +20,106 @@ raw → requirements → design → spec → execution → review → archive
 | review | 检查产出、处理问题并给出结论 | 结果是否满足完成标准？ |
 | archive | 标记完结并归档任务上下文 | 是否可以结束本任务？ |
 
-阶段含义固定，文件形式按任务实际需要决定。轻量任务可以合并相邻阶段的记录，但不得混淆“目标”和“方案”，也不得在缺少必要检查时直接归档。
+轻量任务可以合并相邻阶段，但不得混淆目标和方案，也不得跳过必要检查。L0 不创建 Artifact；L1 默认不创建，确需恢复或追踪时创建；L2/L3 必须创建。
 
-## 流程范围
+## Artifact 机器契约
 
-| 范围 | 适用场景 | 行为 |
-|------|----------|------|
-| L0 直接处理 | 格式、明显小错误、无行为风险的小调整 | 直接执行，做最小检查并总结，不创建 Artifact |
-| L1 快速执行 | 范围局部、目标明确、有直接检查方式 | 执行并检查，必要时创建轻量 Artifact |
-| L2 标准执行 | 目标明确，但需要执行清单和完整检查 | 创建 Artifact，保留 raw、spec、execution、review 等必要记录 |
-| L3 完整流程 | 目标不清、跨工作区、结构性变化或高风险任务 | 创建 Artifact，按全部阶段推进 |
+Artifact ID 使用 UTC 日期：`YYYYMMDD__task-name`。`task-name` 只含小写字母、数字和连字符；同日同名时追加由任务原始目标生成的稳定短摘要。
 
-详细判断见 [flow-policy](flow-policy.md)。
+需要 Artifact 时，以下文件名固定：
 
-## 阶段产出
+| 文件 | 用途 |
+|------|------|
+| `artifacts/index.json` | 活跃 Artifact 的唯一索引 |
+| `{artifact}/artifact.json` | 流程等级、生命周期、父任务和交付物引用 |
+| `{artifact}/requirements/requirements.md` | L2/L3 完成标准的门禁输入 |
+| `{artifact}/review/review.json` | Review 结论、逐项证据和接受记录 |
+| `{artifact}/archive/summary.md` | 完结或取消摘要 |
 
-| 阶段 | 默认目录 | 典型内容 | AI 行为 |
-|------|----------|----------|---------|
-| raw | raw/ | 原始描述、来源、材料副本或引用 | 原样保存，不改写 |
-| requirements | requirements/ | 目标、完成标准、范围、约束、依赖 | 提炼事实与要求 |
-| design | design/ | 方案、结构、决策、取舍和风险 | 比较并选择方案 |
-| spec | spec/ | 执行步骤、规则、产出清单、检查计划 | 将方案转成可执行规范 |
-| execution | execution/ | 实际产出摘要、过程记录、补充决策 | 按 spec 执行 |
-| review | review/ | 检查动作、证据、问题处理和结论 | 检查并判断是否完成 |
-| archive | archive/ | 完结摘要和归档状态 | 关闭任务上下文 |
+其他阶段文档可以按任务需要命名；“文件名不固定”不适用于上述机器契约。实际交付物写入 `projects/` 或用户指定位置，Artifact 只保存任务上下文、证据和引用。
 
-目录用于组织上下文，不强制每个阶段使用固定文件名。实际交付物写入 `projects/` 或用户指定位置，Artifact 只保存任务上下文、引用和必要过程记录。
+`artifact.json` 最低结构：
 
-## Review 结论
+```json
+{
+  "schemaVersion": 1,
+  "id": "20260804__example",
+  "flowLevel": "L2",
+  "status": "in_progress",
+  "outcome": null,
+  "createdAt": "2026-08-04T00:00:00Z",
+  "updatedAt": "2026-08-04T00:00:00Z",
+  "parentArtifactId": null,
+  "deliverables": [
+    { "kind": "deliverable", "path": "projects/result.md", "description": "实际交付物说明" }
+  ]
+}
+```
+
+`status` 只能是 `pending`、`in_progress`、`paused`、`completed`、`cancelled`、`archived`。活跃 Artifact 的 `outcome` 必须为 `null`；归档后必须是 `completed` 或 `cancelled`。`deliverables` 每项必须包含 `kind`、`path` 和面向人的 `description`。`kind: deliverable` 表示实际产出；`kind: artifact-reference` 仅用于拆分、编排等任务，把所创建的子 Artifact 作为该任务的交付结果。普通过程文档不得伪装成交付物。
+
+`artifacts/index.json` 的 `active` 数组只登记尚未移入 `_archived/` 的 Artifact；每项必须包含 `id`、`path`、`status` 和 `updatedAt`。`path` 使用从工作区根开始的 POSIX 相对路径，例如 `artifacts/20260804__example`；`status` 和 `updatedAt` 必须与 `artifact.json` 完全一致。Artifact 自身状态是事实源，索引只是可重建路由。
+
+## Review 机器契约
+
+`review/review.json` 最低结构：
+
+```json
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-04T00:00:00Z",
+  "conclusion": "PASS",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "完成标准原文或 L1 轻量检查标准",
+      "status": "PASS",
+      "method": "检查方式",
+      "evidence": ["证据或路径"]
+    }
+  ],
+  "unresolved": [],
+  "acceptance": null
+}
+```
+
+Review 结论只有三种：
 
 | 结论 | 含义 | 后续动作 |
 |------|------|----------|
-| PASS | 完成标准均有充分证据支持 | 可以归档 |
-| REVIEW | 仍需用户或指定责任方复核 | 暂不归档，获得明确接受后可归档 |
-| BLOCKED | 存在未解决问题或缺少关键证据 | 不得归档，继续处理并重新 Review |
+| `PASS` | 完成标准均有充分证据 | 将 Artifact 标为 `completed` 后可归档 |
+| `REVIEW` | 仍需指定责任方复核 | 用户明确接受并写入 `acceptance` 后，由事务归档脚本从活跃状态直接归档 |
+| `BLOCKED` | 存在失败、关键证据缺失或未解决问题 | 保持活跃，继续处理并重新 Review |
 
-Review 报告至少记录完成标准、检查方式、结果、证据、未解决事项和最终结论。检查可以是命令执行、材料核对、内容审阅、结果预览或其他适合当前任务的方式。
+每个 criteria 项必须包含 `id`、`description`、`status`、`method` 和非空 `evidence`；`status` 只使用 `PASS`、`REVIEW`、`BLOCKED`。L2/L3 的 description 应对应 requirements 原文，L1 则在这里直接定义轻量检查标准。`PASS` 要求全部完成标准 ID 唯一且逐项覆盖、方法与证据非空、没有 `REVIEW` 或 `BLOCKED` 项、`unresolved` 为空。
 
-## 状态
+`REVIEW` 被接受时，`acceptance` 必须记录 `accepted: true`、`acceptedAt`、`source`、`items` 和当前 `reviewDigest`。`acceptedAt` 不得早于 `reviewedAt`；Review 内容变化会改变摘要并使旧接受失效。不得仅凭聊天上下文推断已经接受。
 
-待处理 → 进行中 → 完成 → 已归档
+Markdown Review 报告可以保留给人阅读，但不参与脚本门禁，避免示例、代码块、标题或表格转义改变结论。
 
-任务也可以进入暂停或取消状态。根 `AGENTS.md` 只列活跃 Artifact；归档后从活跃列表移除。
+## 生命周期与归档
+
+```text
+pending → in_progress ↔ paused
+in_progress/paused → completed
+completed → in_progress            # 返工并重新 Review
+pending/in_progress/paused → cancelled
+completed/accepted-review/cancelled → archived
+```
+
+- PASS 归档：Artifact 必须为 `completed`。
+- REVIEW 归档：Artifact 保持 `in_progress` 或 `paused`；写入与当前 Review 摘要匹配的接受记录后，由事务脚本直接归档。
+- 恢复暂停任务时先改为 `in_progress` 并同步索引；已完成任务返工时也回到 `in_progress`，清除旧 acceptance 并重新 Review。
+- 取消归档：Artifact 必须为 `cancelled`，不要求 Review，但 `archive/summary.md` 必须记录取消原因和未完成范围。
+- 归档统一运行 `$an-archive` 的事务脚本；脚本将状态改为 `archived`、写入 `outcome`、移动目录并原子更新 `artifacts/index.json`。
+- 已归档 Artifact 不原地恢复；继续历史任务时创建新 Artifact，并用 `parentArtifactId` 或引用字段关联。
 
 ## 检查点
 
-- L3：展示 requirements、design、spec 和 review 的关键结论、理由与风险；仅在业务语义无法判断、高风险边界、不可逆操作或外部授权时暂停确认。
-- L2：展示 spec 中的执行清单和检查计划，默认继续执行；仅在存在开放问题或高风险操作时暂停确认。
-- L0/L1：可以先完成执行和检查，再在总结中说明采用了轻量流程。
-- 用户要求继续、加速或跳过时，在不突破安全边界的前提下执行并记录风险。
+AI 自主选择流程等级、方案、检查动作和执行顺序。只有目标无法判断、完成标准不自洽、关键业务语义缺失、高风险边界、不可逆操作或外部授权时才暂停确认。
+
+L2 展示 spec 的执行清单和检查计划后默认继续；L3 展示 requirements、design、spec 和 review 的关键结论，但同样只在上述暂停条件成立时等待确认。
 
 ## 可执行动作清单
 
-检查动作优先从 `.agents/recipes.json` 读取；不存在或工作区内容、工具或约定发生变化时运行：
-
-```bash
-node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --write .agents/recipes.json
-```
-
-Recipes 可以记录命令，也可以记录审阅、核对、预览等非命令动作。每次只选择能覆盖当前风险的最小动作集合。
-
-## 完结与归档
-
-L2/L3 必须完成 Review 后才能运行 `/an-archive`。`PASS` 可直接归档；`REVIEW` 仅在用户明确接受剩余复核项后归档；`BLOCKED` 不得归档。
+检查动作优先从 `.agents/recipes.json` 读取。文件不存在或工作区内容、工具、约定发生变化时，运行 `$an-recipes` 重新生成。Recipes 可以记录命令，也可以记录审阅、核对、预览等非命令动作；每次只选择覆盖当前风险的最小集合。

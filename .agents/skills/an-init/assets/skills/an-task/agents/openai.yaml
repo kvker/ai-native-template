@@ -1,4 +1,4 @@
 interface:
-  display_name: "AI Native 任务执行"
-  short_description: "按风险分级推进各类 AI 协作任务"
-  default_prompt: "使用 $an-task 根据任务描述判断流程等级，并推进执行、Review 和归档。"
+  display_name: "AI Native 任务"
+  short_description: "按风险选择 L0-L3 流程并执行、检查和归档实际任务"
+  default_prompt: "使用 $an-task 判断流程等级，完成实际任务、结构化 Review 和必要归档。"

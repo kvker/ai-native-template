@@ -1,60 +1,84 @@
 ---
 name: an-archive
-description: 检查 AI Native 任务的 Review 结论和完结状态，将满足门禁的活跃 Artifact 移到 artifacts/_archived/，并同步根活跃索引。用户要求归档、完结或收起任务上下文时使用。
+description: 检查 Artifact 生命周期和结构化 Review 门禁，通过可恢复事务脚本归档已完成、已接受复核或已取消的任务。用户要求归档、完结或收起任务上下文时使用。
 ---
 
 # Artifact 归档
 
-Archive 是标准工作流的终态，表示任务已经完结。归档不是发布、部署或交接。
+Archive 是标准工作流的终态，表示任务上下文已经关闭。归档不是发布、部署或交接。生命周期和门禁遵循 `conventions/workflow.md`。
 
 ## 一、定位目标
 
-用户指定 Artifact 时直接定位。未指定时列出 `artifacts/` 下除 `_archived/` 外的任务目录，请用户选择。不要创建新的任务 Artifact。
+用户指定 Artifact 时直接定位。未指定时读取 `artifacts/index.json` 并列出活跃项，请用户选择。所有命令从工作区根目录运行；不要创建新的任务 Artifact。
 
-## 二、检查门禁
+已归档 Artifact 不原地恢复；需要继续时创建新 Artifact，并用 `parentArtifactId` 关联。
 
-归档前读取目标 Artifact 的 `review/` 和任务索引：
+## 二、准备摘要
 
-先运行结构门禁：
+归档前创建或补全固定文件 `archive/summary.md`：
+
+- 成功任务：标题使用“# 完结摘要”，至少包含“## 最终产出”及非占位内容，并记录目标、Review 结论、剩余限制和完结时间。
+- 取消任务：标题使用“# 取消摘要”，必须分别包含“## 取消原因”和“## 未完成范围”的非占位内容，并记录保留材料和取消时间。
+
+摘要不得使用“待补充”“N/A”等占位内容；只有标题或笼统一句话不能通过门禁。
+
+## 三、处理 REVIEW 接受
+
+PASS Artifact 应已由 `$an-review` 标记为 `completed`。
+
+REVIEW Artifact 保持 `in_progress` 或 `paused`。用户明确接受时，先运行以下命令取得当前内容摘要：
 
 ```bash
-node .agents/skills/an-review/scripts/review-task.mjs artifacts/{YYYYMMDD}__{task-name}
+node .agents/skills/an-review/scripts/review-task.mjs artifacts/{artifact-id} --archive
 ```
 
-脚本只检查完成标准、Review 证据和显式结论是否一致；AI 仍需确认报告对应实际产出。退出码 `0` 为 PASS、`3` 为 REVIEW、`1` 为 BLOCKED。
+未记录接受时脚本返回 REVIEW，并输出 `Review digest`。把用户本轮明确接受写入 `review/review.json`：
 
-| Review 结论 | 行为 |
-|-------------|------|
-| PASS | 可以归档 |
-| REVIEW | 说明待复核项；只有用户明确接受后归档，并在完结摘要中记录接受内容和来源 |
-| BLOCKED | 拒绝归档并列出阻塞项 |
-| 缺失或不明确 | 先执行 `/an-review`，不得直接归档 |
+```json
+{
+  "accepted": true,
+  "acceptedAt": "UTC ISO-8601 时间",
+  "source": "用户本轮明确指令",
+  "items": ["AC-2", "仍需复核的事项原文"],
+  "reviewDigest": "脚本输出的 Review digest"
+}
+```
 
-同时确认：
+`items` 必须覆盖所有 REVIEW 标准 ID 和未解决事项。Review 内容变化后摘要会变化，旧接受记录自动失效。无需先手工改为 `completed`；事务归档脚本会从已接受 REVIEW 的活跃状态直接归档。
 
-- 实际产出位置已经记录。
-- 未解决事项已关闭或被明确接受。
-- 已具备生成 `archive/summary.md` 所需的任务目标、最终产出、Review 结论和剩余限制。
+## 四、事务归档
 
-## 三、执行归档
+成功任务、已接受 REVIEW 和取消任务统一运行：
 
-1. 创建或补全 `archive/summary.md`，记录任务目标、最终产出、Review 结论、剩余限制、完结时间；接受 REVIEW 时同时记录用户接受的事项和本轮指令来源。
-2. 确保 `artifacts/_archived/` 存在。
-3. 将整个 Artifact 移到 `artifacts/_archived/{原目录名}/`。
-4. 从根 `AGENTS.md` 的活跃 Artifacts 表移除对应行。
-5. 不改写 Artifact 内的 raw 和历史记录。
+```bash
+node .agents/skills/an-archive/scripts/archive-task.mjs artifacts/{artifact-id}
+```
 
-目标目录已存在时停止并报告，不覆盖已有归档。
+脚本会依次完成：
 
-## 四、报告
+1. 验证工作区边界、Artifact、活跃索引、摘要和结构化 Review。
+2. 写入可恢复事务日志。
+3. 移动 Artifact。
+4. 将状态改为 `archived`，写入 `outcome: completed|cancelled`。
+5. 原子更新 `artifacts/index.json`。
+6. 删除事务日志。
 
-报告归档路径、Review 结论、最终产出位置和已接受的剩余限制。
+任一步失败会恢复源目录、原状态和原索引；进程中断后，下次调用会先恢复未完成事务或确认已提交事务。目标目录或悬空符号链接已存在时停止，不覆盖。
+
+退出码：`0` 表示归档完成或已提交事务完成恢复，`1` 表示门禁或事务失败，`2` 表示调用、路径或契约错误。
+
+## 五、报告
+
+报告归档路径、outcome、Review 结论、最终产出位置和已接受的剩余限制。
 
 ## 异常处理
 
 | 情况 | 处理 |
 |------|------|
-| Artifact 不存在 | 列出可用的活跃 Artifact |
+| Artifact 不存在 | 从 `artifacts/index.json` 列出可用活跃项 |
 | 没有活跃 Artifact | 报告当前无可归档任务 |
-| 已经归档 | 报告现有归档路径，不重复移动 |
-| Review 未通过 | 保持活跃状态，说明下一步 |
+| 目标已经归档 | 报告现有归档路径，不重复移动 |
+| Review 未通过 | 保持活跃状态，说明阻塞项 |
+| REVIEW 未接受 | 展示待接受事项和 Review digest，不归档 |
+| 取消任务缺少摘要 | 先补充取消原因和未完成范围 |
+| 存在事务日志 | 重新运行脚本，由脚本恢复后继续 |

@@ -1,68 +1,60 @@
 ---
 name: an-review
-description: 按 requirements 的完成标准和 spec 的检查计划审阅实际产出，执行适合当前任务的检查，处理问题并给出 PASS、REVIEW 或 BLOCKED 结论。任务执行后、归档前或用户询问任务是否完成时使用。
+description: 按 requirements 的稳定完成标准审阅实际产出，将逐项结果写入 review.json，并给出 PASS、REVIEW 或 BLOCKED 结论。任务执行后、归档前或用户要求检查任务是否完成时使用。
 ---
 
 # AI Native 任务 Review
 
-检查实际产出是否达到完成标准。Review 合并检查过程和质量判断，不预设工作类型或检查工具。
+检查实际产出是否达到完成标准。生命周期和 Review 机器契约统一遵循 `conventions/workflow.md`。
+
+## 输入
+
+- `artifact.json`：流程等级、状态和交付物引用。
+- L2/L3 的 `requirements/requirements.md`：带稳定 ID 的完成标准。
+- spec、execution 记录和实际交付物。
+- L1 没有 requirements 时，根据原始目标在 `review.json` 中定义本次轻量检查项。
 
 ## 执行流程
 
-1. 读取 Artifact 的 requirements、spec、execution 记录和实际产出。
-2. 将每项完成标准映射到一个或多个检查动作。
-3. 优先使用 `.agents/recipes.json` 中适用的动作；没有时根据材料设计检查方式。
-4. 执行命令、材料核对、内容审阅、结果预览或必要确认，并保存证据。
-5. 可自行修复的问题先修复，然后重新检查。
-6. 将结果写入 `review/review-report.md`。
-7. 运行结构一致性检查，确认报告具有明确结论且不存在与结论冲突的开放标准。
+1. 将每项完成标准映射到一个或多个检查动作。
+2. 优先使用 `.agents/recipes.json` 中适用且 `purpose` 为 `review` 的动作；没有时根据材料设计检查方式。
+3. 执行命令、材料核对、内容审阅、结果预览或必要确认，并保存可定位证据。
+4. 可自行修复的问题先修复，然后重新检查；如果修改了实际产出，同时更新 `execution/summary.md`。
+5. 将逐项结果、未解决事项和结论写入 `review/review.json`。
+6. 可选生成 `review/review-report.md` 供人阅读，但不要从 Markdown 反推机器结论。
+7. 运行结构门禁：
 
 ```bash
-node .agents/skills/an-review/scripts/review-task.mjs artifacts/{YYYYMMDD}__{task-name}
+node .agents/skills/an-review/scripts/review-task.mjs artifacts/{artifact-id}
 ```
 
-轻量 L1 Artifact 没有 requirements 时使用：
+脚本退出码：`0` 表示 PASS，`3` 表示 REVIEW，`1` 表示 BLOCKED，`2` 表示调用或路径错误。
 
-```bash
-node .agents/skills/an-review/scripts/review-task.mjs artifacts/{YYYYMMDD}__{task-name} --level L1
-```
+门禁为 PASS 后，将 `artifact.json` 和 `artifacts/index.json` 中的状态更新为 `completed`。REVIEW 保持 `in_progress` 或 `paused`；用户明确接受后由 `$an-archive` 直接事务归档，不手工改为 `completed`。BLOCKED 保持 `in_progress` 或 `paused`。
 
-脚本退出码：`0` 表示 PASS，`3` 表示 REVIEW，`1` 表示 BLOCKED，`2` 表示调用错误。`REVIEW` 不是 `BLOCKED`，是否接受剩余复核项由 Archive 阶段决定。
+## 机器记录
 
-## 报告格式
+`review/review.json` 的完整字段以 `conventions/workflow.md` 为准。写入时必须：
 
-```markdown
-# Review 报告
+- 设置当前 UTC `reviewedAt`。
+- 每项 criteria 包含 `id`、`description`、`status`、`method` 和非空 `evidence`。
+- 没有未解决事项时使用空数组，不写“无”或占位文本。
+- 非 REVIEW 结论将 `acceptance` 显式设为 `null`。
 
-## 完成标准
-| ID | 完成标准 | 检查方式 | 结果 | 证据 |
-|----|----------|----------|------|------|
-| AC-1 | ... | ... | 通过/待复核/未通过 | ... |
+门禁脚本会输出当前 `Review digest`；该摘要用于绑定后续用户接受记录。
 
-## 问题处理
-- 无
+## 结论规则
 
-## 未解决事项
-- 无
-
-## 结论
-PASS
-```
-
-## 结论
-
-| 结果 | 含义 |
+| 结果 | 条件 |
 |------|------|
-| PASS | 完成标准均有充分证据，可以归档 |
-| REVIEW | 仍有事项需要复核或由用户明确接受 |
-| BLOCKED | 存在失败、关键证据缺失或未解决问题，不得归档 |
+| PASS | 所有标准均为 PASS、证据有效、没有未解决事项 |
+| REVIEW | 没有 BLOCKED，但仍有明确列出的待复核事项 |
+| BLOCKED | 存在失败、关键证据缺失、重复或漏掉的标准 ID |
 
 ## 约束
 
-- 不通过搜索 `TODO`、`error` 等普通关键词判断任务质量。
-- 每项完成标准使用稳定 ID；Review 必须按 ID 逐项覆盖，不能只比较数量。
-- 只有 `通过`、`已通过` 或 `PASS` 被视为成功；空值、未执行、部分完成和其他结果均不得按通过处理。
-- 不要求所有检查都是命令；检查方式必须适合实际产出。
-- L2/L3 缺少完成标准或关键证据时结论为 BLOCKED。
+- 每项完成标准使用唯一稳定 ID；Review 必须按 ID 逐项覆盖。
+- 检查方式和证据不得为空，也不得使用“待补充”“N/A”等占位内容。
 - 无法执行的检查记录原因、替代证据和风险，不得伪造结果。
-- Review 报告是归档门禁的依据，不替代 AI 对实际产出的检查。
+- Review 报告是说明材料，`review.json` 才是归档门禁依据。
+- 不通过搜索 `TODO`、`error` 等普通关键词判断任务质量。

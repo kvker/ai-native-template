@@ -1,4 +1,4 @@
 interface:
-  display_name: "任务归档"
-  short_description: "检查 Review 门禁并归档已完结任务"
-  default_prompt: "使用 $an-archive 检查 Review 结论，将满足门禁的 Artifact 归档并同步活跃索引。"
+  display_name: "AI Native 归档"
+  short_description: "验证结构化 Review 门禁并安全归档 AI Native 任务上下文"
+  default_prompt: "使用 $an-archive 检查 Artifact 生命周期和结构化 Review 门禁，并安全归档已完成或已取消的任务。"

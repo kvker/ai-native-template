@@ -20,7 +20,7 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --writ
 
 | 字段 | 含义 |
 |------|------|
-| `id` | 工作单元内稳定的动作标识 |
+| `id` | 工作单元内稳定且唯一的动作标识；package script 始终使用名称加内容摘要后缀 |
 | `type` | `command` 或 `inspection` |
 | `purpose` | 动作解决的问题 |
 | `executable` | 命令动作的可执行程序 |
@@ -38,5 +38,7 @@ node .agents/skills/an-recipes/scripts/detect-recipes.mjs --root projects --writ
 - Recipes 不适用时，AI 可以基于 requirements、spec 和实际材料设计一次性 Review 动作，并在报告中说明。
 - 不自动运行常驻服务，不擅自安装依赖，不执行破坏性操作。
 - 失败时记录动作、位置、结果和关键证据，不把“无法执行”写成通过。
-- 没有探测到动作是合法结果，不代表工作区不可使用。
-- `truncated: true` 表示扫描达到上限，动作清单不完整；使用前应扩大范围或针对目标材料继续检查。
+- 没有探测到动作是合法结果，不代表工作区不可使用；但必须先确认 `diagnostics` 中没有扫描错误。
+- `truncated: true` 表示扫描达到上限，动作清单不完整；可用 `--limit 100000` 以内的安全整数扩大范围，或针对目标材料继续检查。
+- 不读取或输出 `.env`，以及名称中包含 secret、credential、token 的敏感路径；显式参数也不能指向这些位置。
+- 只将明确声明的测试工具生成 Review 命令；普通 `requirements.txt` 不代表项目使用 pytest。

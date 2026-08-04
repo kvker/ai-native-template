@@ -1,4 +1,6 @@
 interface:
   display_name: "AI Native 初始化"
-  short_description: "将现有工作区纳入 AI Native 上下文结构"
-  default_prompt: "使用 $an-init 将现有材料纳入领域无关的 AI Native 上下文结构，并生成必要的 background、conventions、recipes 和路由。"
+  short_description: "显式初始化工作区并安全安装 AI Native 运行期 Skills"
+  default_prompt: "使用 $an-init 分析现有材料，生成领域无关的 AI Native 上下文，并在完整校验后安装运行期 Skills。"
+policy:
+  allow_implicit_invocation: false

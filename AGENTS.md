@@ -2,7 +2,7 @@
 
 这是一个通用的 AI Native 上下文模板，用于为任意类型的 AI 协作任务提供结构化上下文。
 
-> **缩写说明**：对话中出现的 "AN" 一般指 AI Native 的缩写。
+> **缩写说明**：对话中出现的“AN”一般指 AI Native 的缩写。
 
 ## 模板定位
 
@@ -14,11 +14,11 @@
 
 | 目录 | 用途 | AI 行为 |
 |------|------|---------|
-| [background](background/) | 静态背景知识 | 只读，了解领域知识 |
+| [background](background/) | 稳定且可刷新的背景知识 | 任务默认只读，仅由初始化、刷新流程或用户明确要求更新 |
 | [conventions](conventions/) | 上下文约定规范、对话长期规则与优化记录 | 开始任务前按需读取；对话过程中自动感知并按需写入 |
-| [artifacts](artifacts/) | 任务产出目录 | 频繁读写，跟踪任务产出 |
+| [artifacts](artifacts/) | 任务状态、上下文与检查证据 | 按任务需要读写；实际交付物只保存引用 |
 | [projects](projects/) | 实际工作区 / 交付物根目录 | 按任务需要读取和写入，每个子目录为一个独立工作单元 |
-| [.agents/skills/an-init](.agents/skills/an-init/) | 模板初始化技能，运行期技能暂存在其 `assets/skills/` 中 | 模板阶段的入口技能；运行期技能以 `SKILL.md.txt` 暂存，模板阶段不可见；`/an-init` 完成后恢复文件名并移入 `.agents/skills/`，an-init 自身删除 |
+| [.agents/skills/an-init](.agents/skills/an-init/) | 模板初始化技能，运行期技能暂存在其 `assets/skills/` 中 | 模板阶段的入口技能；运行期技能以 `SKILL.md.txt` 暂存，模板阶段不可见；`$an-init` 完成后恢复文件名并移入 `.agents/skills/`，an-init 自身删除 |
 
 > `projects/` 在本模板中被视为**工作区根目录**，子目录可以是代码工程、文档集、数据集、设计稿目录或任何需要被 AI 理解和操作的交付物集合。
 
@@ -30,7 +30,7 @@
 
 - 禁止自行脑补未提及的需求、功能或业务逻辑。
 - 所有背景知识必须来自实际材料或用户明确输入。
-- 从工作区材料反推的信息要标注来源；无法确认的信息标记为"待确认"。
+- 从工作区材料反推的信息要标注来源；无法确认的信息标记为“待确认”。
 - 不主动读取或输出 `.env`、`secrets/`、credentials、密钥、token 等敏感文件；除非用户明确授权且任务必要。
 
 ## 必读规范
@@ -46,22 +46,14 @@
 | [rules](conventions/rules.md) | 对话过程中的长期记忆感知与沉淀 |
 | [memories](conventions/memories/AGENTS.md) | 对话优化记录索引 |
 
-## 当前活跃 Artifacts
+## 任务状态
 
-任务过程中按需创建，每个任务在 `artifacts/{YYYYMMDD}__{task-name}/` 下独立管理。
+活跃 Artifact 的唯一索引是 [artifacts/index.json](artifacts/index.json)。根 `AGENTS.md` 不复制动态任务状态，避免任务执行修改高优先级指令文件。
 
-| Artifact | 描述 | 状态 |
-|----------|------|------|
-| - | - | - |
+每个 Artifact 的流程等级、生命周期状态和父任务 ID 记录在自身的 `artifact.json`；Review 结论记录在 `review/review.json`。字段契约见 [workflow](conventions/workflow.md)。
 
 ## Skill 路由
 
-| 意图 | 推荐技能 |
-|------|----------|
-| 初始化模板、将已有工作区纳入 AI Native 结构 | `/an-init` |
-| 开始一个 AI 协作任务 | `/an-task` |
-| 将大任务拆分为多个子任务 | `/an-task-split` |
-| 探测可执行动作/验证动作 | `/an-recipes` |
-| 根据 workspace 现状刷新背景知识 | `/an-refresh` |
-| 检查任务完成质量 | `/an-review` |
-| 归档已完成任务产出 | `/an-archive` |
+当前处于模板阶段，唯一入口是 `$an-init`。支持 Slash Command 的客户端也可以使用 `/an-init`。
+
+运行期 Skills 现在仅以 `SKILL.md.txt` 保存，不应提前路由或调用。初始化完成并重启客户端后，根 `AGENTS.md` 必须改为运行期 Skill 路由，并移除 `an-init` 入口。

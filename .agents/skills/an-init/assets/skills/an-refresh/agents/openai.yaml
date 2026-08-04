@@ -1,4 +1,4 @@
 interface:
-  display_name: "背景知识刷新"
-  short_description: "根据工作区内容和任务结果反向更新 background 文档"
-  default_prompt: "使用 $an-refresh 根据实际工作区材料和已归档任务增量刷新 background。"
+  display_name: "AI Native 背景刷新"
+  short_description: "依据项目事实和已归档任务增量刷新 AI Native 背景知识"
+  default_prompt: "使用 $an-refresh 比较项目事实、已归档任务与现有背景，并增量刷新 AI Native 上下文。"

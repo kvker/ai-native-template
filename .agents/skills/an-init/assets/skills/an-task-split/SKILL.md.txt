@@ -1,83 +1,57 @@
 ---
 name: an-task-split
-description: 将过大的 AI Native 任务拆成多个目标清晰、可独立 Review 的子任务，并生成每个子任务的 raw 和 requirements。用户要求拆分、分解或规划大任务时使用。
+description: 将过大的 AI Native 任务拆成目标清晰、可独立 Review 的子任务，并创建带稳定父子 ID 的任务 Artifact。用户要求拆分、分解或规划大任务时使用。
 ---
 
 # AI Native 任务拆分
 
-拆分本身也是一个任务，遵循唯一标准工作流：
+拆分本身是一个 L2 或 L3 任务，阶段和状态遵循 `conventions/workflow.md`。目标是形成可独立执行、检查和归档的子任务，而不是按固定行业模块切割。原任务足够小时停止拆分，改用 `$an-task`。
 
-```text
-raw → requirements → design → spec → execution → review → archive
-```
+## 一、父 Artifact
 
-拆分的目标是形成可独立执行、检查和归档的子任务，而不是按固定行业模块切割。如果原任务已经足够小，应停止拆分并建议直接使用 `/an-task`。
+先定位父 Artifact。用户尚未创建父任务时，按 `$an-task` 的规则创建一个 L2 拆分 Artifact，再继续执行；不得假定父目录已经存在。
 
-## raw
+父 Artifact 的 `raw/task.md` 保存原始大任务，`requirements/requirements.md` 保存整体目标、范围、约束和完成标准。
 
-将原始大任务保存到父 Artifact 的 `raw/task.md`，不改写用户输入。
+## 二、拆分设计
 
-## requirements
+从目标边界、产出边界、依赖关系、风险和可独立检查性选择拆分方式。每个子任务必须：
 
-将整体目标、范围、约束和完成标准保存到 `requirements/requirements.md`。完成标准使用稳定 ID，并至少覆盖：
+- 有单一清晰目标和独立完成标准。
+- 有明确产出边界，不与兄弟任务共同写同一事实源。
+- 能独立 Review；不能独立判断时继续拆分或合并。
+- 明确依赖 ID 和执行顺序。
+- 保留完成任务所需的必要上下文，不使用任意行数作为门禁。
 
-- 子任务共同覆盖原任务范围。
-- 每个子任务可以独立判断完成状态。
-- 依赖和执行顺序明确。
-- 每份子任务 requirements 不超过 200 行。
-
-## design
-
-从目标边界、产出边界、依赖关系、风险和可独立检查性识别拆分方式，将方案和取舍保存到 `design/design.md`。
-
-默认由 AI 自主选择拆分方案。只有边界依赖关键业务语义、高风险选择或外部授权时才暂停确认。
-
-## spec
-
-将最终拆分定义保存到 `spec/split-plan.md`：
+将最终方案写入父任务的 `spec/split-plan.md`：
 
 ```markdown
 # 拆分规范
 
 ## 子任务
-| 子任务 | 目标 | 核心完成标准 | 依赖 | Artifact |
-|--------|------|--------------|------|----------|
+| ID | 目标 | 核心完成标准 | 依赖 ID | Artifact |
+|----|------|--------------|---------|----------|
 | ... | ... | ... | ... | ... |
-
-## 创建清单
-- [ ] 创建每个子任务的 raw
-- [ ] 创建每个子任务的 requirements
-- [ ] 写入父任务和依赖引用
-- [ ] 更新根活跃 Artifacts 索引
-
-## 执行顺序
-...
 ```
 
-## execution
+## 三、创建子任务
 
-按照 spec 执行拆分：
+1. 为每个子任务创建独立目录和 `artifact.json`。
+2. 子任务 `artifact.json.parentArtifactId` 写父 Artifact 的稳定 ID，不写会随移动失效的相对目录。
+3. `raw/task.md` 记录父 ID、拆分规范引用和子任务原始范围。
+4. `requirements/requirements.md` 写入唯一稳定 ID 的完成标准和依赖 ID。
+5. 初始状态使用 `pending`，并登记到 `artifacts/index.json`。
+6. 将实际创建结果记录到父任务的 `execution/summary.md`，并把每个子 Artifact 以 `{ kind: "artifact-reference", path, description }` 加入父任务 `deliverables`。
 
-1. 为每个子任务创建独立 Artifact。
-2. 写入 `raw/task.md`，保留父任务和拆分规范的引用。
-3. 写入 `requirements/requirements.md`，包含稳定 ID 的完成标准。
-4. 更新根 `AGENTS.md` 的活跃 Artifacts 表。
-5. 将子任务初始状态标记为“待处理”，不要用“进行中”表示尚未启动。
-6. 将实际创建结果记录到父任务的 `execution/summary.md`。
+引用父任务时按稳定 ID 搜索活跃索引和 `_archived/`，因此父任务移动后引用仍然有效。
 
-## review
+## 四、Review 与归档
 
-在父任务的 `review/review-report.md` 中逐项核对：
+父任务的 `review/review.json` 必须逐项检查：
 
-- 每个 spec 中定义的子任务都已创建。
-- raw、requirements、父任务引用和依赖信息完整。
-- 子任务 requirements 没有超过 200 行。
-- 根活跃 Artifacts 索引与实际目录一致。
+- 每个 spec 子任务都已创建并进入活跃索引。
+- 每个子任务都有 `artifact.json`、raw、requirements、父 ID 和依赖信息。
+- 子任务共同覆盖父任务范围且没有冲突写入。
+- 子任务均可独立判断完成状态。
 
-结论为 `PASS`、`REVIEW` 或 `BLOCKED`。缺少子任务、要求或索引时不得判定 PASS。
-
-## archive
-
-父拆分任务 Review 为 PASS 后，生成 `archive/summary.md` 并归档父 Artifact。子任务保留在活跃列表中，后续分别使用 `/an-task` 推进。
-
-Review 为 REVIEW 时只有用户明确接受剩余项后才归档；BLOCKED 不得归档。
+父任务 PASS 后标记 `completed` 并调用 `$an-archive`；子任务继续保留在活跃索引中。REVIEW 只有记录用户明确接受后才能归档，BLOCKED 继续处理。

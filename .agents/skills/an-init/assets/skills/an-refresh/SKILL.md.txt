@@ -28,12 +28,12 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 扫描内容包括：
 
 - 工作单元、目录、文件类型和主要材料变化
-- README、索引、配置和已有说明中明确表达的用途
+- README、索引、配置和已有说明的路径；脚本只做清单，语义由 AI 按需读取实际文件
 - 声明的工具、脚本和可复用动作
-- 已归档任务的 Review 结论和完结摘要
+- 已归档任务的 `artifact.json`、`review/review.json` 和完结摘要
 - 现有 background 与实际材料之间的差异
 
-扫描结果标记 `truncated: true` 时，只能作为部分清单使用；必须扩大扫描范围或针对目标材料继续检查，不能据此断言工作区不存在其他内容。
+扫描结果标记 `truncated: true` 时，只能作为部分清单使用。工作区扫描可用 `--limit 100000` 以内的安全整数扩大；归档扫描可用 `--archive-limit 100000` 以内的安全整数扩大。仍然截断时针对目标材料继续检查，不能据此断言不存在其他内容。
 
 ## 更新
 
@@ -58,6 +58,8 @@ node .agents/skills/an-refresh/scripts/scan-projects.mjs --root projects --artif
 ## 约束
 
 - `projects/` 和用户明确输入是事实来源；冲突时报告差异。
-- Artifact 只有归档且 Review 结论可接受时，才能作为背景更新线索。
+- Artifact 只有 `status: archived`、`outcome: completed` 且 Review 为 PASS 或已记录接受的 REVIEW 时，才能作为背景更新线索。取消归档不进入稳定背景。
 - 一次性执行细节、临时问题和未确认推断不进入稳定背景。
 - 扫描脚本无法识别语义时，由 AI 阅读实际材料补充，不把文件名当成业务事实。
+- 扫描输出中的 `diagnostics` 非空时，必须先报告限制；错误项不得被解释为“没有内容”。
+- 只有扫描结果中 `archivedReviews[].acceptable: true` 的归档任务可以作为 Artifact 背景线索。

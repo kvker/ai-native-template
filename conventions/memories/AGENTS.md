@@ -1,5 +1,5 @@
 # memories
 
-| Memory | 描述 |
-|--------|------|
-| [task-autonomy](task-autonomy.md) | an-task 等任务流程中的 AI 自主决策边界 |
+本目录只保存当前工作区用户明确确认、可跨任务复用的协作规则。通用模板不预置任何个人偏好。
+
+当前没有已确认的 Memory。
