@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "20260807__optimize-an-task-trigger",
+  "flowLevel": "L2",
+  "status": "archived",
+  "outcome": "completed",
+  "createdAt": "2026-08-07T03:05:20Z",
+  "updatedAt": "2026-08-07T03:28:33.466Z",
+  "parentArtifactId": null,
+  "deliverables": [
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/assets/skills/an-task/SKILL.md.txt",
+      "description": "an-task 触发机制优化后的运行期 Skill 定义"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/assets/skills/an-task/agents/openai.yaml",
+      "description": "an-task 强化隐式发现分流的元数据"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/SKILL.md",
+      "description": "初始化路由要求补充逐消息重新分流约束"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/tests/template-contract.test.mjs",
+      "description": "新增 an-task 入口触发契约测试"
+    }
+  ]
+}

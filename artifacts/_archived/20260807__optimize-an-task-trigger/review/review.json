@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-07T03:20:00Z",
+  "conclusion": "PASS",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "an-task 的发现描述（description）明确列出“开始/实现/动手/开工/继续按方案做”等进入执行态的触发信号，让隐式调用也能正确命中。",
+      "status": "PASS",
+      "method": "读取 .agents/skills/an-init/assets/skills/an-task/SKILL.md.txt frontmatter description",
+      "evidence": [".agents/skills/an-init/assets/skills/an-task/SKILL.md.txt 第 3 行"]
+    },
+    {
+      "id": "AC-2",
+      "description": "an-task 正文新增“逐消息重新分流”规则：设计讨论不触发，一旦用户下达开始/实现指令即进入任务分流，前文讨论不构成跳过理由。",
+      "status": "PASS",
+      "method": "读取 an-task 正文“〇、触发与逐消息重新分流”章节",
+      "evidence": [".agents/skills/an-init/assets/skills/an-task/SKILL.md.txt 第 10-15 行"]
+    },
+    {
+      "id": "AC-3",
+      "description": "an-init 生成的根 AGENTS 路由要求包含该触发规则，确保初始化后的工作区具备同样的触发语义。",
+      "status": "PASS",
+      "method": "读取 .agents/skills/an-init/SKILL.md 根 AGENTS 路由要求",
+      "evidence": [".agents/skills/an-init/SKILL.md 第 57 行"]
+    },
+    {
+      "id": "AC-4",
+      "description": "契约测试覆盖异常示例（连续讨论后说“开始吧”必须触发 an-task 语义），并验证测试全部通过。",
+      "status": "PASS",
+      "method": "运行 node --test .agents/skills/an-init/tests/*.test.mjs",
+      "evidence": [".agents/skills/an-init/tests/template-contract.test.mjs 新增测试", "node --test 输出：61 pass / 0 fail"]
+    }
+  ],
+  "unresolved": [],
+  "acceptance": null
+}

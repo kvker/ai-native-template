@@ -27,6 +27,24 @@ test("Skill 元数据、目录名和暂存文件保持一致", () => {
   }
 });
 
+test("an-task 触发机制锁定讨论态到执行态的切换", () => {
+  const skill = fs.readFileSync(path.join(INIT, "assets/skills/an-task/SKILL.md.txt"), "utf8");
+  const metadata = fs.readFileSync(path.join(INIT, "assets/skills/an-task/agents/openai.yaml"), "utf8");
+  const init = fs.readFileSync(path.join(INIT, "SKILL.md"), "utf8");
+
+  // AC-1：发现描述包含进入执行态的触发信号，隐式调用也能命中
+  assert.match(skill, /^description:.*“开始吧”.*“实现”.*(执行态|分流).*$/m);
+
+  // AC-2：正文包含逐消息重新分流规则；连续讨论后用户下达开始/实现指令必须进入分流
+  assert.match(skill, /## 〇、触发与逐消息重新分流/);
+  assert.match(skill, /每收到一条新消息都重新分流/);
+  assert.match(skill, /不构成跳过分流的理由|不得因前文/);
+  assert.ok(metadata.includes("$an-task"), "an-task 元数据未引用 Skill");
+
+  // AC-3：初始化生成的根 AGENTS 路由要求包含触发规则
+  assert.match(init, /an-task.*触发规则|触发规则.*an-task/);
+});
+
 test("an-init 必须禁止隐式触发", () => {
   const metadata = fs.readFileSync(path.join(INIT, "agents/openai.yaml"), "utf8");
   assert.match(metadata, /allow_implicit_invocation:\s*false/);

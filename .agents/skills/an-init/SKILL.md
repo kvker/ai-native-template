@@ -54,6 +54,7 @@ node .agents/skills/an-init/assets/skills/an-refresh/scripts/scan-projects.mjs -
 - 必读规范。
 - 指向 `artifacts/index.json` 的任务状态路由。
 - `$an-task`、`$an-task-split`、`$an-recipes`、`$an-refresh`、`$an-review`、`$an-archive` 的运行期 Skill 路由。
+- `$an-task` 触发规则：用户明确下达“开始吧”“开始做”“实现”“动手”“开工”等进入执行态的指令时，无论此前讨论多少轮，都必须先经 `$an-task` 分流；该规则写入运行期根 AGENTS。
 
 移除原模板阶段说明，但在安装完成前保留以下唯一待完成路由块；所有 `$an-init` 和 `.agents/skills/an-init` 引用都必须放在块内：
 
