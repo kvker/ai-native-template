@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "20260807__fix-archive-cli-bugs",
+  "flowLevel": "L2",
+  "status": "archived",
+  "outcome": "completed",
+  "createdAt": "2026-08-07T03:42:30Z",
+  "updatedAt": "2026-08-07T03:44:17.000Z",
+  "parentArtifactId": null,
+  "deliverables": [
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/assets/skills/an-archive/scripts/archive-task.mjs",
+      "description": "修复归档脚本 CLI TDZ 缺陷与 _archived 目录创建逻辑"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/tests/archive-task.test.mjs",
+      "description": "新增对应回归测试"
+    }
+  ]
+}

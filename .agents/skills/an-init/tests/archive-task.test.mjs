@@ -133,6 +133,28 @@ test("moved 阶段恢复会回滚目录和状态", (t) => {
   assert.equal(readJson(path.join(fixture.source, "artifact.json")).status, "completed");
 });
 
+test("CLI 参数错误输出真实用法错误而非 TDZ 异常", (t) => {
+  const fixture = createArtifact({ status: "completed" });
+  t.after(fixture.cleanup);
+
+  const result = spawnSync(process.execPath, [ARCHIVE_SCRIPT, "--bad"], { cwd: fixture.root, encoding: "utf8" });
+
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /用法：archive-task\.mjs/);
+  assert.ok(!/Cannot access 'InvocationError'/.test(result.stderr), "stderr 不应包含 TDZ 异常信息");
+});
+
+test("缺少 _archived 目录时自动创建并完成归档", (t) => {
+  const fixture = createArtifact({ status: "completed", skipArchiveDir: true });
+  t.after(fixture.cleanup);
+
+  const result = archiveTask(fixture.root, `artifacts/${fixture.id}`);
+
+  assert.equal(result.status, "archived");
+  assert.ok(fs.existsSync(fixture.archivePath));
+  assert.equal(readJson(path.join(fixture.root, "artifacts/index.json")).active.length, 0);
+});
+
 test("通过符号链接启动 CLI 仍会执行主流程", (t) => {
   const fixture = createArtifact({ status: "completed" });
   t.after(fixture.cleanup);
@@ -175,7 +197,7 @@ function createArtifact(options = {}) {
   fs.mkdirSync(path.join(source, "requirements"), { recursive: true });
   fs.mkdirSync(path.join(source, "review"), { recursive: true });
   fs.mkdirSync(path.join(source, "archive"), { recursive: true });
-  fs.mkdirSync(path.join(root, "artifacts/_archived"), { recursive: true });
+  if (!options.skipArchiveDir) fs.mkdirSync(path.join(root, "artifacts/_archived"), { recursive: true });
   const status = options.status || "in_progress";
   const artifact = {
     schemaVersion: 1, id, flowLevel: "L2", status, outcome: null, createdAt: NOW, updatedAt: NOW, parentArtifactId: null,

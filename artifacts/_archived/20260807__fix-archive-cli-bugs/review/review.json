@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-07T03:44:16Z",
+  "conclusion": "PASS",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "archive-task.mjs 的 CLI 入口在参数错误或门禁失败时输出真实错误信息与正确退出码，不再出现 TDZ 异常。",
+      "status": "PASS",
+      "method": "真实 CLI 冒烟与回归测试",
+      "evidence": [
+        ".agents/skills/an-init/tests/archive-task.test.mjs 新增测试",
+        "node archive-task.mjs --bad 输出用法且退出码 2"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "description": "resolvePaths 在 `_archived` 目录不存在时自动创建，首次归档无需手工建目录。",
+      "status": "PASS",
+      "method": "回归测试覆盖 skipArchiveDir 场景",
+      "evidence": [
+        ".agents/skills/an-init/tests/archive-task.test.mjs 新增测试"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "description": "新增回归测试覆盖上述两个缺陷场景，全部测试通过。",
+      "status": "PASS",
+      "method": "运行 node --test .agents/skills/an-init/tests/*.test.mjs",
+      "evidence": [
+        "63 pass / 0 fail"
+      ]
+    }
+  ],
+  "unresolved": [],
+  "acceptance": null
+}

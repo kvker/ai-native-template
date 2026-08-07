@@ -8,7 +8,6 @@ import { reviewReadiness } from "../../an-review/scripts/review-task.mjs";
 const ARTIFACT_ID = /^\d{8}__[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 const isMain = process.argv[1] && sameFile(process.argv[1], fileURLToPath(import.meta.url));
-if (isMain) runCli();
 
 function runCli(argv = process.argv.slice(2), cwd = process.cwd()) {
   try {
@@ -133,8 +132,8 @@ function resolvePaths(root, input) {
   const id = path.basename(source);
   if (!ARTIFACT_ID.test(id) || path.dirname(source) !== artifactsRoot) throw new InvocationError("只允许归档 artifacts/ 下的一级 Artifact");
   const archiveRoot = path.join(artifactsRoot, "_archived");
+  if (!entryExists(archiveRoot)) fs.mkdirSync(archiveRoot, { recursive: true });
   assertDirectoryInside(root, archiveRoot, "归档目录");
-  if (!entryExists(archiveRoot)) fs.mkdirSync(archiveRoot);
   return {
     root,
     id,
@@ -294,3 +293,5 @@ class InvocationError extends Error {
 class ArchiveGateError extends Error {
   constructor(message) { super(message); this.exitCode = 1; }
 }
+
+if (isMain) runCli();
