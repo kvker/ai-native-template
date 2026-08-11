@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "20260811__review-fix-scale-trigger",
+  "flowLevel": "L2",
+  "status": "archived",
+  "outcome": "completed",
+  "createdAt": "2026-08-11T06:01:20Z",
+  "updatedAt": "2026-08-11T06:02:13.921Z",
+  "parentArtifactId": "20260807__scale-aware-trigger",
+  "deliverables": [
+    {
+      "kind": "deliverable",
+      "path": "conventions/flow-policy.md",
+      "description": "膨胀暂停条款区分未建仓/已建仓路径"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/assets/skills/an-task/SKILL.md.txt",
+      "description": "L2 触发清单补齐与文件数口径"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/tests/template-contract.test.mjs",
+      "description": "强化规模判据数值与清单一致性断言"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "20260811__review-fix-scale-trigger-round3",
+  "flowLevel": "L2",
+  "status": "archived",
+  "outcome": "completed",
+  "createdAt": "2026-08-11T06:13:32Z",
+  "updatedAt": "2026-08-11T06:22:56.270Z",
+  "parentArtifactId": "20260811__review-fix-scale-trigger-round2",
+  "deliverables": [
+    {
+      "kind": "deliverable",
+      "path": "conventions/flow-policy.md",
+      "description": "line 66 与 line 58 已建仓处理措辞统一"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/assets/skills/an-task/SKILL.md.txt",
+      "description": "依赖措辞与 flow-policy 对齐（外部依赖）"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/tests/template-contract.test.mjs",
+      "description": "断言与更新后措辞同步"
+    }
+  ]
+}

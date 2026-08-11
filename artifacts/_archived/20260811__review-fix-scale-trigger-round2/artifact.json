@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "20260811__review-fix-scale-trigger-round2",
+  "flowLevel": "L2",
+  "status": "archived",
+  "outcome": "completed",
+  "createdAt": "2026-08-11T06:07:29Z",
+  "updatedAt": "2026-08-11T06:07:44.110Z",
+  "parentArtifactId": "20260811__review-fix-scale-trigger",
+  "deliverables": [
+    {
+      "kind": "deliverable",
+      "path": "conventions/flow-policy.md",
+      "description": "自主决策与确认小节已建仓/未建仓区分，L1 轻量 Artifact 归类，边界算子统一"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/tests/template-contract.test.mjs",
+      "description": "锁定 an-task 3 文件阈值、已建仓不重复询问建仓、line 66 语义"
+    },
+    {
+      "kind": "deliverable",
+      "path": "artifacts/_archived/20260811__review-fix-scale-trigger/review/review.json",
+      "description": "修正 AC-4 占位证据为真实复审结论"
+    }
+  ]
+}

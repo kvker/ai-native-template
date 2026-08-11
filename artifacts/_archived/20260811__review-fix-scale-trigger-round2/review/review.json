@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-11T06:07:44Z",
+  "conclusion": "PASS",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "flow-policy\"自主决策与确认\"小节的规模膨胀确认条件区分已建仓/未建仓，消除与客观规模判据小节的语义矛盾。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "conventions/flow-policy.md line 66",
+        "契约测试 AC-4 断言"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "description": "膨胀条款的\"已建仓\"定义覆盖 L1 轻量 Artifact（按是否已存在 Artifact 判定，而非仅按 L2/L3）。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "conventions/flow-policy.md line 57-58",
+        "contract 测试 AC-4"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "description": "\"达 3 轮\"边界算子统一，契约测试锁定 an-task 的\"3 个以上文件\"阈值与\"已建仓不重复询问建仓\"语义。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "template-contract.test.mjs 强化断言",
+        "node --test：64 pass / 0 fail"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "description": "归档 review.json 的 AC-4 占位证据修正为真实复审结论；全部测试通过；下一轮独立复审无可执行问题。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "归档 review.json evidence 修正",
+        "待循环第 3 轮复审结果"
+      ]
+    }
+  ],
+  "unresolved": [],
+  "acceptance": null
+}

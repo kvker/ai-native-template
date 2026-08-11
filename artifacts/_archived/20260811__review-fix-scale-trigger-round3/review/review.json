@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-11T06:22:56Z",
+  "conclusion": "PASS",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "flow-policy line 66 与 line 58 的已建仓处理措辞统一：已建仓任务达 3 轮时在 Artifact 内更新并重新 Review，不暂停确认升级、不重复询问建仓。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "conventions/flow-policy.md line 66 与 line 58",
+        "第 6/7 轮复审确认"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "description": "an-task 与 flow-policy 的\"外部依赖\"措辞一致。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "an-task/SKILL.md.txt line 24",
+        "契约测试 AC-3 断言"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "description": "flow-policy line 58 的已建仓处理适配 L1 轻量 Artifact（无 requirements/spec 时更新相应阶段文档），契约测试锁定该措辞。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "conventions/flow-policy.md line 58",
+        "template-contract.test.mjs 断言（含 L1 轻量 Artifact、相应阶段文档）"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "description": "本轮先完成独立复审、确认无可执行问题后再归档；review.json 证据为已发生事实；P1/P2/P3 归档时序失真在 execution 摘要说明，不追改只读归档文件。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "本轮先复审后归档",
+        "第 4-7 轮独立复审，第 7 轮返回未发现问题；execution/summary.md 记录时序失真说明"
+      ]
+    }
+  ],
+  "unresolved": [],
+  "acceptance": null
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-11T06:02:13Z",
+  "conclusion": "PASS",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "flow-policy 的膨胀暂停条款区分\"未建仓（L0/L1）升级并补建 Artifact\"与\"已建仓（L2/L3）范围更新与重新 Review\"两条路径，消除语义重叠与无意义暂停。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "conventions/flow-policy.md 膨胀暂停条款",
+        "契约测试 AC-4 断言"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "description": "an-task 的 L2 触发清单补齐与 flow-policy 一致（含数据迁移、权限或安全边界、多轮迭代），并同步 L0 不超过 1 个、L1 不超过 2 个的文件数口径。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "an-task/SKILL.md.txt L2 清单与文件数口径",
+        "契约测试 AC-2/AC-3 断言"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "description": "契约测试锁定具体数值（L0≤1、L1≤2、3 轮阈值）与两文档清单一致性，阈值漂移会被捕获。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "template-contract.test.mjs 强化断言",
+        "node --test 输出：64 pass / 0 fail"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "description": "全部测试通过；重新子代理审查返回无可执行问题。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "复审子代理独立验证（20260811）：64 项测试通过；问题 2 已解决、问题 1/3 部分解决，残留项由 20260811__review-fix-scale-trigger 归档后的追加修复处理"
+      ]
+    }
+  ],
+  "unresolved": [],
+  "acceptance": null
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "20260807__scale-aware-trigger",
+  "flowLevel": "L2",
+  "status": "archived",
+  "outcome": "completed",
+  "createdAt": "2026-08-11T05:52:22Z",
+  "updatedAt": "2026-08-11T05:53:41.030Z",
+  "parentArtifactId": null,
+  "deliverables": [
+    {
+      "kind": "deliverable",
+      "path": "conventions/flow-policy.md",
+      "description": "L0/L1 客观规模判据与迭代膨胀再评估确认条件"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/assets/skills/an-task/SKILL.md.txt",
+      "description": "触发与建仓分离表述、规模判定与迭代再评估规则"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/SKILL.md",
+      "description": "根 AGENTS 路由要求补充小改动不跳过分流"
+    },
+    {
+      "kind": "deliverable",
+      "path": ".agents/skills/an-init/tests/template-contract.test.mjs",
+      "description": "规模感知触发契约测试"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "reviewedAt": "2026-08-11T05:53:33Z",
+  "conclusion": "PASS",
+  "criteria": [
+    {
+      "id": "AC-1",
+      "description": "an-task 明确\"分流判定 ≠ 建 Artifact\"：任何进入执行态的请求都必须先判定 L0-L3；L0/L1 只是不创建 Artifact，不是不判定。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "an-task/SKILL.md.txt 触发章节与流程分级",
+        "契约测试 AC-1 断言"
+      ]
+    },
+    {
+      "id": "AC-2",
+      "description": "flow-policy 为 L0/L1 补充客观规模判据：仅修改 1 个前端文件且不涉及后端、不新增文件/接口/依赖时才允许 L0/L1。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "conventions/flow-policy.md 客观规模判据",
+        "契约测试 AC-2 断言"
+      ]
+    },
+    {
+      "id": "AC-3",
+      "description": "flow-policy 明确规模触发线：预计变更涉及 3 个以上文件或跨前后端/后端接口/数据层时，至少使用 L2，必须创建 Artifact。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "conventions/flow-policy.md 客观规模判据",
+        "契约测试 AC-3 断言"
+      ]
+    },
+    {
+      "id": "AC-4",
+      "description": "flow-policy 与 an-task 加入迭代膨胀再评估：执行中连续迭代达 3 轮或实际改动超出初始规模判断时，暂停并向用户确认是否升级流程并创建 Artifact。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "conventions/flow-policy.md 与 an-task/SKILL.md.txt",
+        "契约测试 AC-4 断言"
+      ]
+    },
+    {
+      "id": "AC-5",
+      "description": "契约测试覆盖上述规模判定与再评估规则，全部测试通过。",
+      "status": "PASS",
+      "method": "核对",
+      "evidence": [
+        "template-contract.test.mjs 新增测试",
+        "node --test 输出：64 pass / 0 fail"
+      ]
+    }
+  ],
+  "unresolved": [],
+  "acceptance": null
+}
