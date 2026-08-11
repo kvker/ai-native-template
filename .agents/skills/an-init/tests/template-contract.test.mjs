@@ -45,6 +45,43 @@ test("an-task 触发机制锁定讨论态到执行态的切换", () => {
   assert.match(init, /an-task.*触发规则|触发规则.*an-task/);
 });
 
+test("an-task 规模感知触发机制：小改动不跳过分流、规模膨胀升级", () => {
+  const skill = fs.readFileSync(path.join(INIT, "assets/skills/an-task/SKILL.md.txt"), "utf8");
+  const flow = fs.readFileSync(path.resolve(INIT, "../../../conventions/flow-policy.md"), "utf8");
+  const init = fs.readFileSync(path.join(INIT, "SKILL.md"), "utf8");
+
+  // AC-1：分流判定与建 Artifact 分离；小改动也必须先判定
+  assert.match(skill, /分流判定不等于/);
+  assert.match(skill, /不允许跳过判定|不允许不判定/);
+
+  // AC-2：L0/L1 客观判据锁定具体数值与层约束（两文档口径一致）
+  assert.match(flow, /L0 不超过 1 个/);
+  assert.match(flow, /L1 不超过 2 个/);
+  assert.match(flow, /不跨前后端/);
+  assert.match(skill, /L0 限不超过 1 个文件、L1 限不超过 2 个文件/);
+
+  // AC-3：3 个以上文件或跨前后端 → 至少 L2；两文档阈值与清单一致
+  assert.match(flow, /3 个以上文件/);
+  assert.match(skill, /3 个以上文件/);
+  assert.match(flow, /至少使用 L2/);
+  assert.match(skill, /数据迁移/);
+  assert.match(skill, /权限或安全边界/);
+  assert.match(skill, /多轮迭代/);
+
+  // AC-4：迭代膨胀再评估；两文档 3 轮阈值一致，区分未建仓/已建仓，且已建仓不重复询问建仓
+  assert.match(flow, /达 3 轮实质迭代/);
+  assert.match(skill, /连续迭代达 3 轮/);
+  assert.match(flow, /未建仓任务.*补建 Artifact/);
+  assert.match(flow, /含 L1 轻量 Artifact/);
+  assert.match(flow, /相应阶段文档/);
+  assert.match(skill, /相应阶段文档/);
+  assert.match(flow, /不重复询问是否建仓/);
+  assert.match(skill, /不重复询问是否建仓/);
+
+  // 根路由要求包含规模规则
+  assert.match(init, /an-task.*规模|规模.*an-task/);
+});
+
 test("an-init 必须禁止隐式触发", () => {
   const metadata = fs.readFileSync(path.join(INIT, "agents/openai.yaml"), "utf8");
   assert.match(metadata, /allow_implicit_invocation:\s*false/);
